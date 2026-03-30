@@ -10,7 +10,6 @@ venv/
 env/
 
 # Django
-*.sqlite3
 staticfiles/
 media/
 
