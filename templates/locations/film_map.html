@@ -1,0 +1,186 @@
+{% extends "base.html" %}
+{% load crispy_forms_tags %}
+
+{% block title %}Carte d'un Film{% endblock %}
+{% block breadcrumb %}Carte d'un Film{% endblock %}
+
+{% block content %}
+<div class="row">
+  <!-- Search Card -->
+  <div class="col-md-4">
+    <div class="card card-primary card-outline">
+      <div class="card-header">
+        <h3 class="card-title">
+          <i class="fas fa-search mr-2"></i>Rechercher un film
+        </h3>
+      </div>
+      <div class="card-body">
+        <form method="get" action="{% url 'film_map' %}">
+          <div class="form-group">
+            <label for="id_query"><i class="fas fa-film mr-1"></i> Titre du film</label>
+            <input type="text" id="id_query" name="query"
+                   class="form-control" autocomplete="off"
+                   placeholder="Ex: Inception, The Dark Knight..."
+                   value="{{ request.GET.query|default:'' }}"
+                   list="film-suggestions">
+            <datalist id="film-suggestions"></datalist>
+          </div>
+          <div class="form-group">
+            <label for="id_wikidata_id"><i class="fab fa-wikipedia-w mr-1"></i> Identifiant Wikidata</label>
+            {{ form.wikidata_id }}
+            <small class="form-text text-muted">
+              Ex: <code>Q25188</code> pour Inception, <code>Q471716</code> pour Le Fabuleux destin d'Amélie Poulain
+            </small>
+          </div>
+          <button type="submit" class="btn btn-primary btn-block">
+            <i class="fas fa-map-marked-alt mr-2"></i>Afficher sur la carte
+          </button>
+        </form>
+      </div>
+    </div>
+
+    {% if error %}
+    <div class="callout callout-danger">
+      <h5><i class="fas fa-exclamation-triangle mr-2"></i>Erreur</h5>
+      <p>{{ error }}</p>
+      <a href="{% url 'admin_import' %}" class="btn btn-sm btn-warning">
+        <i class="fas fa-cloud-download-alt mr-1"></i>Importer ce film
+      </a>
+    </div>
+    {% endif %}
+
+    {% if film %}
+    <div class="card card-success card-outline">
+      <div class="card-header">
+        <h3 class="card-title">
+          <i class="fas fa-info-circle mr-2"></i>{{ film.title }}
+        </h3>
+      </div>
+      <div class="card-body">
+        {% if film.poster_url %}
+        <div class="text-center mb-3">
+          <img src="{{ film.poster_url }}" alt="{{ film.title }}" class="img-fluid rounded" style="max-height:200px;">
+        </div>
+        {% endif %}
+        <ul class="list-unstyled">
+          <li><i class="fas fa-calendar-alt mr-2 text-muted"></i>
+            <strong>Sortie :</strong> {{ film.release_date|default:"Inconnue" }}
+          </li>
+          <li><i class="fab fa-wikipedia-w mr-2 text-muted"></i>
+            <strong>Wikidata :</strong>
+            <a href="https://www.wikidata.org/wiki/{{ film.wikidata_id }}" target="_blank">
+              {{ film.wikidata_id }}
+            </a>
+          </li>
+          <li class="mt-2"><i class="fas fa-map-marker-alt mr-2 text-muted"></i>
+            <strong>Lieux de tournage :</strong>
+            <span class="badge badge-info">{{ locations|length }}</span>
+          </li>
+        </ul>
+      </div>
+    </div>
+
+    {% if locations %}
+    <div class="card">
+      <div class="card-header">
+        <h3 class="card-title"><i class="fas fa-list mr-2"></i>Liste des lieux</h3>
+      </div>
+      <div class="card-body p-0">
+        <ul class="list-group list-group-flush">
+          {% for loc in locations %}
+          <li class="list-group-item">
+            <i class="fas fa-map-pin mr-2 text-danger"></i>
+            <strong>{{ loc.name }}</strong>
+            {% if loc.country %}
+            <span class="badge badge-secondary float-right">{{ loc.country }}</span>
+            {% endif %}
+            {% if loc.latitude %}
+            <br><small class="text-muted">
+              <i class="fas fa-globe-europe mr-1"></i>
+              {{ loc.latitude|floatformat:4 }}, {{ loc.longitude|floatformat:4 }}
+            </small>
+            {% endif %}
+          </li>
+          {% endfor %}
+        </ul>
+      </div>
+    </div>
+    {% endif %}
+    {% endif %}
+
+    <!-- Tip Card -->
+    <div class="card card-info card-outline">
+      <div class="card-header">
+        <h3 class="card-title"><i class="fas fa-lightbulb mr-2"></i>Astuce</h3>
+      </div>
+      <div class="card-body">
+        <p class="text-sm">
+          Pour trouver l'identifiant Wikidata d'un film, cherchez-le sur
+          <a href="https://www.wikidata.org" target="_blank">wikidata.org</a>
+          et copiez le code <code>Q...</code> dans l'URL.
+        </p>
+        <p class="text-sm">Exemples populaires :</p>
+        <ul class="text-sm">
+          <li><code>Q25188</code> &mdash; Inception</li>
+          <li><code>Q471716</code> &mdash; Amélie Poulain</li>
+          <li><code>Q180037</code> &mdash; Le Seigneur des Anneaux</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- Map Card -->
+  <div class="col-md-8">
+    <div class="card">
+      <div class="card-header">
+        <h3 class="card-title">
+          <i class="fas fa-map mr-2"></i>
+          {% if film %}Lieux de tournage : {{ film.title }}{% else %}Carte interactive{% endif %}
+        </h3>
+      </div>
+      <div class="card-body p-0">
+        {% if map_html %}
+          <div class="map-container">
+            {{ map_html|safe }}
+          </div>
+        {% else %}
+          <div class="d-flex align-items-center justify-content-center" style="min-height:500px; background:#f4f6f9;">
+            <div class="text-center text-muted">
+              <i class="fas fa-map-marked-alt fa-5x mb-3" style="color:#dee2e6;"></i>
+              <h4>Aucun film sélectionné</h4>
+              <p>Recherchez un film par titre ou identifiant Wikidata pour afficher ses lieux de tournage.</p>
+            </div>
+          </div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+(function () {
+  const input = document.getElementById('id_query');
+  const datalist = document.getElementById('film-suggestions');
+  const url = "{% url 'film_autocomplete' %}";
+  let timer = null;
+
+  input.addEventListener('input', function () {
+    clearTimeout(timer);
+    const q = this.value.trim();
+    if (q.length < 2) { datalist.innerHTML = ''; return; }
+
+    timer = setTimeout(function () {
+      fetch(url + '?q=' + encodeURIComponent(q))
+        .then(r => r.json())
+        .then(function (films) {
+          datalist.innerHTML = films
+            .map(f => `<option value="${f.title}" data-id="${f.wikidata_id}">`)
+            .join('');
+        });
+    }, 250);
+  });
+})();
+</script>
+{% endblock %}
