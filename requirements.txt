@@ -1,0 +1,7 @@
+django>=6.0
+django-adminlte3
+requests
+SPARQLWrapper
+folium
+django-crispy-forms
+crispy-bootstrap5

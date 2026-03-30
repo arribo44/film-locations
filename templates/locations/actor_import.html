@@ -1,0 +1,205 @@
+{% extends "base.html" %}
+
+{% block title %}Import acteur{% endblock %}
+{% block breadcrumb %}Import acteur Wikidata{% endblock %}
+
+{% block content %}
+<div class="row">
+  <!-- Import Form -->
+  <div class="col-md-6">
+    <div class="card card-warning card-outline">
+      <div class="card-header">
+        <h3 class="card-title">
+          <i class="fas fa-user-plus mr-2"></i>Importer un acteur depuis Wikidata
+        </h3>
+      </div>
+      <div class="card-body">
+        <p class="text-muted mb-4">
+          Entrez l'identifiant Wikidata d'un acteur pour importer son profil
+          et sa filmographie. Les lieux de tournage ne sont pas importés ici
+          (utilisez <a href="{% url 'admin_import' %}">Import film</a> pour cela).
+        </p>
+        <form method="post" action="{% url 'actor_import' %}">
+          {% csrf_token %}
+          <div class="form-group">
+            <label for="{{ form.wikidata_id.id_for_label }}">
+              <i class="fab fa-wikipedia-w mr-1"></i>
+              {{ form.wikidata_id.label }}
+            </label>
+            {{ form.wikidata_id }}
+            {% if form.wikidata_id.help_text %}
+            <small class="form-text text-muted">{{ form.wikidata_id.help_text }}</small>
+            {% endif %}
+            {% if form.wikidata_id.errors %}
+            <div class="invalid-feedback d-block">
+              {% for error in form.wikidata_id.errors %}{{ error }}{% endfor %}
+            </div>
+            {% endif %}
+          </div>
+          <button type="submit" class="btn btn-warning btn-lg btn-block">
+            <i class="fas fa-download mr-2"></i>Importer l'acteur
+          </button>
+        </form>
+      </div>
+    </div>
+
+    <!-- How to find Wikidata ID -->
+    <div class="card card-info">
+      <div class="card-header">
+        <h3 class="card-title">
+          <i class="fas fa-question-circle mr-2"></i>Comment trouver un identifiant Wikidata ?
+        </h3>
+      </div>
+      <div class="card-body">
+        <ol>
+          <li>Allez sur <a href="https://www.wikidata.org" target="_blank">www.wikidata.org</a></li>
+          <li>Cherchez l'acteur dans la barre de recherche</li>
+          <li>Cliquez sur son nom dans les résultats</li>
+          <li>L'identifiant apparaît dans l'URL : <code>wikidata.org/wiki/<strong>Q37175</strong></code></li>
+        </ol>
+        <hr>
+        <p><strong>Acteurs populaires à tester :</strong></p>
+        <div class="row">
+          <div class="col-6">
+            <ul class="list-unstyled text-sm">
+              <li><code>Q37175</code> &mdash; Leonardo DiCaprio</li>
+              <li><code>Q25191</code> &mdash; Tom Hanks</li>
+              <li><code>Q43416</code> &mdash; Johnny Depp</li>
+              <li><code>Q36153</code> &mdash; Brad Pitt</li>
+            </ul>
+          </div>
+          <div class="col-6">
+            <ul class="list-unstyled text-sm">
+              <li><code>Q23812</code> &mdash; Meryl Streep</li>
+              <li><code>Q40523</code> &mdash; Marion Cotillard</li>
+              <li><code>Q235753</code> &mdash; Daniel Craig</li>
+              <li><code>Q57592</code> &mdash; Audrey Tautou</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Import Result + Recent Actors -->
+  <div class="col-md-6">
+
+    {% if imported_actor %}
+    <div class="card card-success">
+      <div class="card-header">
+        <h3 class="card-title">
+          <i class="fas fa-check-circle mr-2"></i>Import réussi
+        </h3>
+      </div>
+      <div class="card-body">
+        <div class="row">
+          {% if imported_actor.photo_url %}
+          <div class="col-3">
+            <img src="{{ imported_actor.photo_url }}" alt="{{ imported_actor.name }}" class="img-fluid rounded">
+          </div>
+          <div class="col-9">
+          {% else %}
+          <div class="col-12">
+          {% endif %}
+            <h4>{{ imported_actor.name }}</h4>
+            <ul class="list-unstyled">
+              {% if imported_actor.birth_date %}
+              <li><i class="fas fa-birthday-cake mr-2 text-muted"></i>
+                <strong>Naissance :</strong> {{ imported_actor.birth_date }}
+              </li>
+              {% endif %}
+              <li><i class="fab fa-wikipedia-w mr-2 text-muted"></i>
+                <a href="https://www.wikidata.org/wiki/{{ imported_actor.wikidata_id }}" target="_blank">
+                  {{ imported_actor.wikidata_id }}
+                </a>
+              </li>
+            </ul>
+            {% if import_stats %}
+            <div class="mt-2">
+              <span class="badge badge-primary mr-1">
+                <i class="fas fa-film mr-1"></i>{{ import_stats.films }} film(s)
+              </span>
+              {% if import_stats.actor_created %}
+              <span class="badge badge-success">Nouveau !</span>
+              {% else %}
+              <span class="badge badge-secondary">Mis à jour</span>
+              {% endif %}
+            </div>
+            {% endif %}
+          </div>
+        </div>
+        <div class="mt-3">
+          <a href="{% url 'actor_map' %}?actor_name={{ imported_actor.name|urlencode }}" class="btn btn-sm btn-primary mr-2">
+            <i class="fas fa-map mr-1"></i>Voir sur la carte
+          </a>
+          <a href="{% url 'actor_import' %}" class="btn btn-sm btn-secondary">
+            <i class="fas fa-plus mr-1"></i>Importer un autre acteur
+          </a>
+        </div>
+      </div>
+    </div>
+    {% endif %}
+
+    <!-- Recent Actors -->
+    <div class="card">
+      <div class="card-header">
+        <h3 class="card-title">
+          <i class="fas fa-history mr-2"></i>Acteurs récemment importés
+        </h3>
+      </div>
+      <div class="card-body p-0">
+        {% if recent_actors %}
+        <table class="table table-sm table-hover mb-0">
+          <thead>
+            <tr>
+              <th>Acteur</th>
+              <th>ID Wikidata</th>
+              <th>Films</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for actor in recent_actors %}
+            <tr>
+              <td>
+                <strong>{{ actor.name }}</strong>
+                {% if actor.birth_date %}
+                <br><small class="text-muted">{{ actor.birth_date.year }}</small>
+                {% endif %}
+              </td>
+              <td>
+                <a href="https://www.wikidata.org/wiki/{{ actor.wikidata_id }}" target="_blank" class="text-sm">
+                  {{ actor.wikidata_id }}
+                </a>
+              </td>
+              <td>
+                <span class="badge badge-primary">{{ actor.actor_films.count }}</span>
+              </td>
+              <td>
+                <a href="{% url 'actor_map' %}?actor_name={{ actor.name|urlencode }}" class="btn btn-xs btn-primary" title="Voir la carte">
+                  <i class="fas fa-map-marked-alt"></i>
+                </a>
+                <form method="post" action="{% url 'actor_delete' actor.pk %}" class="d-inline"
+                      onsubmit="return confirm('Supprimer {{ actor.name }} ?')">
+                  {% csrf_token %}
+                  <button type="submit" class="btn btn-xs btn-danger" title="Supprimer">
+                    <i class="fas fa-trash"></i>
+                  </button>
+                </form>
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+        {% else %}
+        <div class="text-center p-4 text-muted">
+          <i class="fas fa-users fa-3x mb-3" style="color:#dee2e6;"></i>
+          <p>Aucun acteur importé pour le moment.</p>
+        </div>
+        {% endif %}
+      </div>
+    </div>
+
+  </div>
+</div>
+{% endblock %}

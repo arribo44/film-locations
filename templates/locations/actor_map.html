@@ -1,0 +1,183 @@
+{% extends "base.html" %}
+{% load crispy_forms_tags %}
+
+{% block title %}Carte d'un Acteur{% endblock %}
+{% block breadcrumb %}Carte d'un Acteur{% endblock %}
+
+{% block content %}
+<div class="row">
+  <!-- Search Card -->
+  <div class="col-md-4">
+    <div class="card card-warning card-outline">
+      <div class="card-header">
+        <h3 class="card-title">
+          <i class="fas fa-user-circle mr-2"></i>Rechercher un acteur
+        </h3>
+      </div>
+      <div class="card-body">
+        <form method="get" action="{% url 'actor_map' %}">
+          <div class="form-group">
+            <label for="id_actor_name">
+              <i class="fas fa-user mr-1"></i> Nom de l'acteur / actrice
+            </label>
+            <input type="text" id="id_actor_name" name="actor_name"
+                   class="form-control" autocomplete="off"
+                   placeholder="Ex: Leonardo DiCaprio, Marion Cotillard..."
+                   value="{{ request.GET.actor_name|default:'' }}"
+                   list="actor-suggestions">
+            <datalist id="actor-suggestions"></datalist>
+            <small class="form-text text-muted">
+              Cherchez dans la base de données locale (acteurs déjà importés)
+            </small>
+          </div>
+          <button type="submit" class="btn btn-warning btn-block">
+            <i class="fas fa-map-marked-alt mr-2"></i>Afficher sur la carte
+          </button>
+        </form>
+      </div>
+    </div>
+
+    {% if error %}
+    <div class="callout callout-danger">
+      <h5><i class="fas fa-exclamation-triangle mr-2"></i>Non trouvé</h5>
+      <p>{{ error }}</p>
+      <a href="{% url 'admin_import' %}" class="btn btn-sm btn-warning">
+        <i class="fas fa-cloud-download-alt mr-1"></i>Importer des films
+      </a>
+    </div>
+    {% endif %}
+
+    {% if actor %}
+    <div class="card card-success card-outline">
+      <div class="card-header">
+        <h3 class="card-title">
+          <i class="fas fa-star mr-2"></i>{{ actor.name }}
+        </h3>
+      </div>
+      <div class="card-body">
+        {% if actor.photo_url %}
+        <div class="text-center mb-3">
+          <img src="{{ actor.photo_url }}" alt="{{ actor.name }}" class="img-fluid rounded-circle" style="max-height:120px; max-width:120px;">
+        </div>
+        {% endif %}
+        <ul class="list-unstyled">
+          <li><i class="fas fa-birthday-cake mr-2 text-muted"></i>
+            <strong>Naissance :</strong> {{ actor.birth_date|default:"Inconnue" }}
+          </li>
+          <li><i class="fab fa-wikipedia-w mr-2 text-muted"></i>
+            <strong>Wikidata :</strong>
+            <a href="https://www.wikidata.org/wiki/{{ actor.wikidata_id }}" target="_blank">
+              {{ actor.wikidata_id }}
+            </a>
+          </li>
+          <li class="mt-2"><i class="fas fa-film mr-2 text-muted"></i>
+            <strong>Films :</strong>
+            <span class="badge badge-warning">{{ films|length }}</span>
+          </li>
+          <li><i class="fas fa-map-marker-alt mr-2 text-muted"></i>
+            <strong>Lieux de tournage :</strong>
+            <span class="badge badge-info">{{ locations|length }}</span>
+          </li>
+        </ul>
+      </div>
+    </div>
+
+    {% if films %}
+    <div class="card">
+      <div class="card-header">
+        <h3 class="card-title"><i class="fas fa-film mr-2"></i>Filmographie (en base)</h3>
+      </div>
+      <div class="card-body p-0">
+        <ul class="list-group list-group-flush">
+          {% for film in films %}
+          <li class="list-group-item">
+            <i class="fas fa-clapperboard mr-2 text-primary"></i>
+            <strong>{{ film.title }}</strong>
+            {% if film.release_date %}
+            <span class="badge badge-light float-right">{{ film.release_date.year }}</span>
+            {% endif %}
+          </li>
+          {% endfor %}
+        </ul>
+      </div>
+    </div>
+    {% endif %}
+    {% endif %}
+
+    <div class="card card-info card-outline">
+      <div class="card-header">
+        <h3 class="card-title"><i class="fas fa-info-circle mr-2"></i>Information</h3>
+      </div>
+      <div class="card-body">
+        <p class="text-sm">
+          La carte affiche tous les lieux de tournage des films de cet acteur
+          <strong>déjà importés</strong> dans la base de données.
+        </p>
+        <p class="text-sm">
+          Pour obtenir plus de films, utilisez la page
+          <a href="{% url 'admin_import' %}">Import Wikidata</a>.
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Map Card -->
+  <div class="col-md-8">
+    <div class="card">
+      <div class="card-header">
+        <h3 class="card-title">
+          <i class="fas fa-map mr-2"></i>
+          {% if actor %}
+            Tournages de {{ actor.name }}
+            <span class="badge badge-warning ml-2">{{ films|length }} film(s)</span>
+          {% else %}
+            Carte interactive
+          {% endif %}
+        </h3>
+      </div>
+      <div class="card-body p-0">
+        {% if map_html %}
+          <div class="map-container">
+            {{ map_html|safe }}
+          </div>
+        {% else %}
+          <div class="d-flex align-items-center justify-content-center" style="min-height:500px; background:#f4f6f9;">
+            <div class="text-center text-muted">
+              <i class="fas fa-user-circle fa-5x mb-3" style="color:#dee2e6;"></i>
+              <h4>Aucun acteur sélectionné</h4>
+              <p>Recherchez un acteur pour afficher l'ensemble de ses lieux de tournage.</p>
+            </div>
+          </div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+(function () {
+  const input = document.getElementById('id_actor_name');
+  const datalist = document.getElementById('actor-suggestions');
+  const url = "{% url 'actor_autocomplete' %}";
+  let timer = null;
+
+  input.addEventListener('input', function () {
+    clearTimeout(timer);
+    const q = this.value.trim();
+    if (q.length < 2) { datalist.innerHTML = ''; return; }
+
+    timer = setTimeout(function () {
+      fetch(url + '?q=' + encodeURIComponent(q))
+        .then(r => r.json())
+        .then(function (actors) {
+          datalist.innerHTML = actors
+            .map(a => `<option value="${a.name}">`)
+            .join('');
+        });
+    }, 250);
+  });
+})();
+</script>
+{% endblock %}

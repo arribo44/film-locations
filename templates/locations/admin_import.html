@@ -1,0 +1,221 @@
+{% extends "base.html" %}
+{% load crispy_forms_tags %}
+
+{% block title %}Import Wikidata{% endblock %}
+{% block breadcrumb %}Import Wikidata{% endblock %}
+
+{% block content %}
+<div class="row">
+  <!-- Import Form -->
+  <div class="col-md-6">
+    <div class="card card-danger card-outline">
+      <div class="card-header">
+        <h3 class="card-title">
+          <i class="fas fa-cloud-download-alt mr-2"></i>Importer un film depuis Wikidata
+        </h3>
+      </div>
+      <div class="card-body">
+        <p class="text-muted mb-4">
+          Entrez l'identifiant Wikidata d'un film pour importer automatiquement
+          ses données : titre, date de sortie, lieux de tournage et acteurs principaux.
+        </p>
+        <form method="post" action="{% url 'admin_import' %}">
+          {% csrf_token %}
+          <div class="form-group">
+            <label for="{{ form.wikidata_id.id_for_label }}">
+              <i class="fab fa-wikipedia-w mr-1"></i>
+              {{ form.wikidata_id.label }}
+            </label>
+            {{ form.wikidata_id }}
+            {% if form.wikidata_id.help_text %}
+            <small class="form-text text-muted">{{ form.wikidata_id.help_text }}</small>
+            {% endif %}
+            {% if form.wikidata_id.errors %}
+            <div class="invalid-feedback d-block">
+              {% for error in form.wikidata_id.errors %}{{ error }}{% endfor %}
+            </div>
+            {% endif %}
+          </div>
+          <button type="submit" class="btn btn-danger btn-lg btn-block">
+            <i class="fas fa-download mr-2"></i>Importer le film
+          </button>
+        </form>
+      </div>
+    </div>
+
+    <!-- How to find Wikidata ID -->
+    <div class="card card-info">
+      <div class="card-header">
+        <h3 class="card-title">
+          <i class="fas fa-question-circle mr-2"></i>Comment trouver un identifiant Wikidata ?
+        </h3>
+      </div>
+      <div class="card-body">
+        <ol>
+          <li>Allez sur <a href="https://www.wikidata.org" target="_blank">www.wikidata.org</a></li>
+          <li>Cherchez le film dans la barre de recherche</li>
+          <li>Cliquez sur le film dans les résultats</li>
+          <li>L'identifiant apparaît dans l'URL : <code>wikidata.org/wiki/<strong>Q25188</strong></code></li>
+        </ol>
+        <hr>
+        <p><strong>Films populaires à tester :</strong></p>
+        <div class="row">
+          <div class="col-6">
+            <ul class="list-unstyled text-sm">
+              <li><code>Q25188</code> &mdash; Inception</li>
+              <li><code>Q471716</code> &mdash; Amélie Poulain</li>
+              <li><code>Q83495</code> &mdash; The Matrix</li>
+              <li><code>Q483536</code> &mdash; Avatar</li>
+            </ul>
+          </div>
+          <div class="col-6">
+            <ul class="list-unstyled text-sm">
+              <li><code>Q180037</code> &mdash; LOTR: Fellowship</li>
+              <li><code>Q11235</code> &mdash; Star Wars IV</li>
+              <li><code>Q272760</code> &mdash; Casino Royale</li>
+              <li><code>Q167726</code> &mdash; The Dark Knight</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Import Result + Recent Films -->
+  <div class="col-md-6">
+
+    {% if imported_film %}
+    <div class="card card-success">
+      <div class="card-header">
+        <h3 class="card-title">
+          <i class="fas fa-check-circle mr-2"></i>Import réussi
+        </h3>
+      </div>
+      <div class="card-body">
+        <div class="row">
+          {% if imported_film.poster_url %}
+          <div class="col-4">
+            <img src="{{ imported_film.poster_url }}" alt="{{ imported_film.title }}" class="img-fluid rounded">
+          </div>
+          <div class="col-8">
+          {% else %}
+          <div class="col-12">
+          {% endif %}
+            <h4>{{ imported_film.title }}</h4>
+            <ul class="list-unstyled">
+              <li><i class="fas fa-calendar-alt mr-2 text-muted"></i>
+                <strong>Sortie :</strong> {{ imported_film.release_date|default:"Inconnue" }}
+              </li>
+              <li><i class="fab fa-wikipedia-w mr-2 text-muted"></i>
+                <a href="https://www.wikidata.org/wiki/{{ imported_film.wikidata_id }}" target="_blank">
+                  {{ imported_film.wikidata_id }}
+                </a>
+              </li>
+            </ul>
+            {% if import_stats %}
+            <div class="mt-2">
+              <span class="badge badge-info mr-1">
+                <i class="fas fa-users mr-1"></i>{{ import_stats.actors }} acteur(s)
+              </span>
+              <span class="badge badge-success mr-1">
+                <i class="fas fa-map-marker-alt mr-1"></i>{{ import_stats.locations }} lieu(x)
+              </span>
+              {% if import_stats.actors_linked %}
+              <span class="badge badge-warning mr-1">
+                <i class="fas fa-user-check mr-1"></i>{{ import_stats.actors_linked }} acteur(s) liés
+              </span>
+              {% endif %}
+              {% if import_stats.film_created %}
+              <span class="badge badge-primary">Nouveau !</span>
+              {% else %}
+              <span class="badge badge-secondary">Mis à jour</span>
+              {% endif %}
+            </div>
+            {% endif %}
+          </div>
+        </div>
+        <div class="mt-3">
+          <a href="{% url 'film_map' %}?wikidata_id={{ imported_film.wikidata_id }}" class="btn btn-sm btn-primary mr-2">
+            <i class="fas fa-map mr-1"></i>Voir sur la carte
+          </a>
+          <a href="{% url 'admin_import' %}" class="btn btn-sm btn-secondary">
+            <i class="fas fa-plus mr-1"></i>Importer un autre film
+          </a>
+        </div>
+      </div>
+    </div>
+    {% endif %}
+
+    <!-- Recent Films -->
+    <div class="card">
+      <div class="card-header">
+        <h3 class="card-title">
+          <i class="fas fa-history mr-2"></i>Films récemment importés
+        </h3>
+      </div>
+      <div class="card-body p-0">
+        {% if recent_films %}
+        <table class="table table-sm table-hover mb-0">
+          <thead>
+            <tr>
+              <th style="width:48px"></th>
+              <th>Film</th>
+              <th>ID</th>
+              <th>Lieux</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for film in recent_films %}
+            <tr>
+              <td class="p-1 text-center">
+                {% if film.poster_url %}
+                <img src="{{ film.poster_url }}" alt="{{ film.title }}"
+                     style="height:48px;width:34px;object-fit:cover;border-radius:3px;">
+                {% else %}
+                <i class="fas fa-film fa-lg text-muted"></i>
+                {% endif %}
+              </td>
+              <td>
+                <strong>{{ film.title|truncatechars:30 }}</strong>
+                {% if film.release_date %}
+                <br><small class="text-muted">{{ film.release_date.year }}</small>
+                {% endif %}
+              </td>
+              <td>
+                <a href="https://www.wikidata.org/wiki/{{ film.wikidata_id }}" target="_blank" class="text-sm">
+                  {{ film.wikidata_id }}
+                </a>
+              </td>
+              <td>
+                <span class="badge badge-info">{{ film.locations.count }}</span>
+              </td>
+              <td>
+                <a href="{% url 'film_map' %}?wikidata_id={{ film.wikidata_id }}" class="btn btn-xs btn-primary" title="Voir la carte">
+                  <i class="fas fa-map-marked-alt"></i>
+                </a>
+                <form method="post" action="{% url 'film_delete' film.pk %}" class="d-inline"
+                      onsubmit="return confirm('Supprimer {{ film.title }} ?')">
+                  {% csrf_token %}
+                  <button type="submit" class="btn btn-xs btn-danger" title="Supprimer">
+                    <i class="fas fa-trash"></i>
+                  </button>
+                </form>
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+        {% else %}
+        <div class="text-center p-4 text-muted">
+          <i class="fas fa-database fa-3x mb-3" style="color:#dee2e6;"></i>
+          <p>Aucun film importé pour le moment.</p>
+          <p class="text-sm">Utilisez le formulaire ci-contre pour commencer !</p>
+        </div>
+        {% endif %}
+      </div>
+    </div>
+
+  </div>
+</div>
+{% endblock %}

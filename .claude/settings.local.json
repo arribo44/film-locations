@@ -1,0 +1,11 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(mysql --version)",
+      "Bash(mkdir -p /home/utilisateur/PROJETS/FILM_LOCATIONS)",
+      "Bash(python3 -m venv venv)",
+      "Bash(/home/utilisateur/PROJETS/FILM_LOCATIONS/venv/bin/pip install:*)",
+      "Bash(/home/utilisateur/PROJETS/FILM_LOCATIONS/venv/bin/django-admin startproject:*)"
+    ]
+  }
+}
