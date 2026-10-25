@@ -58,6 +58,9 @@ def home_view(request):
     return redirect('film_map')
 
 
+# Les tuiles CartoDB exigent désormais une clé API ; OpenStreetMap reste libre d'accès.
+MAP_TILES = 'OpenStreetMap'
+
 MARKER_COLORS = [
     'red', 'blue', 'green', 'purple', 'orange', 'darkred',
     'darkblue', 'darkgreen', 'cadetblue', 'darkpurple',
@@ -81,7 +84,7 @@ def _build_map(locations_qs, center=None, zoom=4):
     if center is None:
         center = [20, 0]
 
-    fmap = folium.Map(location=center, zoom_start=zoom, tiles='CartoDB positron')
+    fmap = folium.Map(location=center, zoom_start=zoom, tiles=MAP_TILES)
     valid_lats, valid_lons = [], []
 
     for loc in locations_qs:
@@ -112,7 +115,7 @@ def _build_actor_map(films_qs, center=None, zoom=3):
     if center is None:
         center = [20, 0]
 
-    fmap = folium.Map(location=center, zoom_start=zoom, tiles='CartoDB positron')
+    fmap = folium.Map(location=center, zoom_start=zoom, tiles=MAP_TILES)
     valid_lats, valid_lons = [], []
 
     # Attribuer une couleur à chaque film
@@ -296,7 +299,7 @@ def location_films_view(request):
                         map_locs.append(sl)
 
                 if map_locs:
-                    fmap = folium.Map(location=[20, 0], zoom_start=4, tiles='CartoDB positron')
+                    fmap = folium.Map(location=[20, 0], zoom_start=4, tiles=MAP_TILES)
                     lats, lons = [], []
                     for loc in map_locs:
                         lats.append(loc.latitude)
