@@ -2,15 +2,23 @@
 Django settings for film_locations project.
 """
 
+import os
 from pathlib import Path
+
+from django.core.exceptions import ImproperlyConfigured
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-SECRET_KEY = 'django-insecure-REMOVED'
+DEBUG = os.environ.get('DJANGO_DEBUG', '1') == '1'
 
-DEBUG = True
+# Clé lue depuis l'environnement ; une clé de développement n'est tolérée qu'avec DEBUG.
+SECRET_KEY = os.environ.get('DJANGO_SECRET_KEY')
+if not SECRET_KEY:
+    if not DEBUG:
+        raise ImproperlyConfigured("La variable d'environnement DJANGO_SECRET_KEY est obligatoire.")
+    SECRET_KEY = 'django-insecure-dev-only-do-not-use-in-production'
 
-ALLOWED_HOSTS = ['*']
+ALLOWED_HOSTS = os.environ.get('DJANGO_ALLOWED_HOSTS', 'localhost,127.0.0.1').split(',')
 
 
 INSTALLED_APPS = [

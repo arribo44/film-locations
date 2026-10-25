@@ -105,8 +105,9 @@ python3 -m venv venv
 source venv/bin/activate
 pip install -r requirements.txt
 
-# 3. Apply migrations
+# 3. Create the database and load the demo data
 python manage.py migrate
+python manage.py loaddata demo
 
 # 4. Create an admin account (needed for the import pages)
 python manage.py createsuperuser
@@ -117,7 +118,23 @@ python manage.py runserver
 
 Then open <http://127.0.0.1:8000/>.
 
-> The repository ships with a sample SQLite database (`db.sqlite3`) holding about 27 films (James Bond, Scorsese/De Niro classics, *Inception*, *Gladiator*…), 14 actors and 200+ filming locations, so the maps work right away.
+> The demo fixture (`locations/fixtures/demo.json`) holds 27 films (James Bond, Scorsese/De Niro classics, *Inception*, *Gladiator*…), 14 actors and 200+ filming locations, so the maps work right away. It contains no user accounts.
+
+### Configuration
+
+Settings are read from environment variables:
+
+| Variable | Default | Description |
+|----------|---------|-------------|
+| `DJANGO_SECRET_KEY` | dev-only key (when `DEBUG` is on) | **Required** in production |
+| `DJANGO_DEBUG` | `1` | Set to `0` in production |
+| `DJANGO_ALLOWED_HOSTS` | `localhost,127.0.0.1` | Comma-separated host names |
+
+Generate a key with:
+
+```bash
+python -c "from django.core.management.utils import get_random_secret_key; print(get_random_secret_key())"
+```
 
 ### Typical workflow
 
@@ -140,13 +157,13 @@ FILM_LOCATIONS/
 │   ├── wikidata_service.py  # SPARQL queries against Wikidata
 │   ├── forms.py             # Search & import forms (Wikidata ID validation)
 │   ├── admin.py             # Django admin configuration
+│   ├── fixtures/demo.json   # Demo data (films, actors, locations)
 │   └── urls.py
 ├── templates/               # AdminLTE-based templates
 │   ├── base.html
 │   └── locations/
 ├── static/
 ├── docs/screenshots/        # Images used in this README
-├── db.sqlite3               # Sample database
 └── requirements.txt
 ```
 
@@ -156,7 +173,7 @@ FILM_LOCATIONS/
 
 - The coverage depends on Wikidata: some films have no `P915` (filming location) or no coordinates for their locations. Those locations are listed but not shown on the map.
 - Searches run on the **local database** only. A film or actor must be imported before it can be searched.
-- This is an educational project. Settings are for **development only** (`DEBUG = True`, hard-coded `SECRET_KEY`, `ALLOWED_HOSTS = ['*']`). Move them to environment variables before any deployment.
+- This is an educational project, run with Django's development server. See [Configuration](#configuration) before any deployment.
 - The UI is in French.
 
 ---

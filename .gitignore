@@ -27,3 +27,6 @@ local_settings.py
 # OS
 .DS_Store
 Thumbs.db
+
+# Base de données locale (les données de démo sont dans locations/fixtures/demo.json)
+db.sqlite3
