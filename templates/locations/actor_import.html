@@ -1,7 +1,8 @@
 {% extends "base.html" %}
+{% load i18n %}
 
-{% block title %}Import acteur{% endblock %}
-{% block breadcrumb %}Import acteur Wikidata{% endblock %}
+{% block title %}{% trans "Import acteur" %}{% endblock %}
+{% block breadcrumb %}{% trans "Import acteur Wikidata" %}{% endblock %}
 
 {% block content %}
 <div class="row">
@@ -10,14 +11,17 @@
     <div class="card card-warning card-outline">
       <div class="card-header">
         <h3 class="card-title">
-          <i class="fas fa-user-plus mr-2"></i>Importer un acteur depuis Wikidata
+          <i class="fas fa-user-plus mr-2"></i>{% trans "Importer un acteur depuis Wikidata" %}
         </h3>
       </div>
       <div class="card-body">
         <p class="text-muted mb-4">
+          {% url 'admin_import' as import_url %}
+          {% blocktrans trimmed %}
           Entrez l'identifiant Wikidata d'un acteur pour importer son profil
           et sa filmographie. Les lieux de tournage ne sont pas importés ici
-          (utilisez <a href="{% url 'admin_import' %}">Import film</a> pour cela).
+          (utilisez <a href="{{ import_url }}">Import film</a> pour cela).
+          {% endblocktrans %}
         </p>
         <form method="post" action="{% url 'actor_import' %}">
           {% csrf_token %}
@@ -37,7 +41,7 @@
             {% endif %}
           </div>
           <button type="submit" class="btn btn-warning btn-lg btn-block">
-            <i class="fas fa-download mr-2"></i>Importer l'acteur
+            <i class="fas fa-download mr-2"></i>{% trans "Importer l'acteur" %}
           </button>
         </form>
       </div>
@@ -47,33 +51,33 @@
     <div class="card card-info">
       <div class="card-header">
         <h3 class="card-title">
-          <i class="fas fa-question-circle mr-2"></i>Comment trouver un identifiant Wikidata ?
+          <i class="fas fa-question-circle mr-2"></i>{% trans "Comment trouver un identifiant Wikidata ?" %}
         </h3>
       </div>
       <div class="card-body">
         <ol>
-          <li>Allez sur <a href="https://www.wikidata.org" target="_blank">www.wikidata.org</a></li>
-          <li>Cherchez l'acteur dans la barre de recherche</li>
-          <li>Cliquez sur son nom dans les résultats</li>
-          <li>L'identifiant apparaît dans l'URL : <code>wikidata.org/wiki/<strong>Q37175</strong></code></li>
+          <li>{% blocktrans trimmed %}Allez sur <a href="https://www.wikidata.org" target="_blank">www.wikidata.org</a>{% endblocktrans %}</li>
+          <li>{% trans "Cherchez l'acteur dans la barre de recherche" %}</li>
+          <li>{% trans "Cliquez sur son nom dans les résultats" %}</li>
+          <li>{% trans "L'identifiant apparaît dans l'URL :" %} <code>wikidata.org/wiki/<strong>Q38111</strong></code></li>
         </ol>
         <hr>
-        <p><strong>Acteurs populaires à tester :</strong></p>
+        <p><strong>{% trans "Acteurs populaires à tester :" %}</strong></p>
         <div class="row">
           <div class="col-6">
             <ul class="list-unstyled text-sm">
-              <li><code>Q37175</code> &mdash; Leonardo DiCaprio</li>
-              <li><code>Q25191</code> &mdash; Tom Hanks</li>
-              <li><code>Q43416</code> &mdash; Johnny Depp</li>
-              <li><code>Q36153</code> &mdash; Brad Pitt</li>
+              <li><code>Q38111</code> &mdash; Leonardo DiCaprio</li>
+              <li><code>Q2263</code> &mdash; Tom Hanks</li>
+              <li><code>Q37175</code> &mdash; Johnny Depp</li>
+              <li><code>Q35332</code> &mdash; Brad Pitt</li>
             </ul>
           </div>
           <div class="col-6">
             <ul class="list-unstyled text-sm">
-              <li><code>Q23812</code> &mdash; Meryl Streep</li>
-              <li><code>Q40523</code> &mdash; Marion Cotillard</li>
-              <li><code>Q235753</code> &mdash; Daniel Craig</li>
-              <li><code>Q57592</code> &mdash; Audrey Tautou</li>
+              <li><code>Q873</code> &mdash; Meryl Streep</li>
+              <li><code>Q8927</code> &mdash; Marion Cotillard</li>
+              <li><code>Q4547</code> &mdash; Daniel Craig</li>
+              <li><code>Q304123</code> &mdash; Audrey Tautou</li>
             </ul>
           </div>
         </div>
@@ -88,7 +92,7 @@
     <div class="card card-success">
       <div class="card-header">
         <h3 class="card-title">
-          <i class="fas fa-check-circle mr-2"></i>Import réussi
+          <i class="fas fa-check-circle mr-2"></i>{% trans "Import réussi" %}
         </h3>
       </div>
       <div class="card-body">
@@ -105,7 +109,7 @@
             <ul class="list-unstyled">
               {% if imported_actor.birth_date %}
               <li><i class="fas fa-birthday-cake mr-2 text-muted"></i>
-                <strong>Naissance :</strong> {{ imported_actor.birth_date }}
+                <strong>{% trans "Naissance :" %}</strong> {{ imported_actor.birth_date }}
               </li>
               {% endif %}
               <li><i class="fab fa-wikipedia-w mr-2 text-muted"></i>
@@ -117,12 +121,12 @@
             {% if import_stats %}
             <div class="mt-2">
               <span class="badge badge-primary mr-1">
-                <i class="fas fa-film mr-1"></i>{{ import_stats.films }} film(s)
+                <i class="fas fa-film mr-1"></i>{% blocktrans count counter=import_stats.films_linked %}{{ counter }} film lié{% plural %}{{ counter }} films liés{% endblocktrans %}
               </span>
               {% if import_stats.actor_created %}
-              <span class="badge badge-success">Nouveau !</span>
+              <span class="badge badge-success">{% trans "Nouveau !" %}</span>
               {% else %}
-              <span class="badge badge-secondary">Mis à jour</span>
+              <span class="badge badge-secondary">{% trans "Mis à jour" %}</span>
               {% endif %}
             </div>
             {% endif %}
@@ -130,10 +134,10 @@
         </div>
         <div class="mt-3">
           <a href="{% url 'actor_map' %}?actor_name={{ imported_actor.name|urlencode }}" class="btn btn-sm btn-primary mr-2">
-            <i class="fas fa-map mr-1"></i>Voir sur la carte
+            <i class="fas fa-map mr-1"></i>{% trans "Voir sur la carte" %}
           </a>
           <a href="{% url 'actor_import' %}" class="btn btn-sm btn-secondary">
-            <i class="fas fa-plus mr-1"></i>Importer un autre acteur
+            <i class="fas fa-plus mr-1"></i>{% trans "Importer un autre acteur" %}
           </a>
         </div>
       </div>
@@ -144,7 +148,7 @@
     <div class="card">
       <div class="card-header">
         <h3 class="card-title">
-          <i class="fas fa-history mr-2"></i>Acteurs récemment importés
+          <i class="fas fa-history mr-2"></i>{% trans "Acteurs récemment importés" %}
         </h3>
       </div>
       <div class="card-body p-0">
@@ -152,10 +156,10 @@
         <table class="table table-sm table-hover mb-0">
           <thead>
             <tr>
-              <th>Acteur</th>
-              <th>ID Wikidata</th>
-              <th>Films</th>
-              <th>Action</th>
+              <th>{% trans "Acteur" %}</th>
+              <th>{% trans "ID Wikidata" %}</th>
+              <th>{% trans "Films" %}</th>
+              <th>{% trans "Action" %}</th>
             </tr>
           </thead>
           <tbody>
@@ -176,13 +180,21 @@
                 <span class="badge badge-primary">{{ actor.actor_films.count }}</span>
               </td>
               <td>
-                <a href="{% url 'actor_map' %}?actor_name={{ actor.name|urlencode }}" class="btn btn-xs btn-primary" title="Voir la carte">
+                <a href="{% url 'actor_map' %}?actor_name={{ actor.name|urlencode }}" class="btn btn-xs btn-primary" title="{% trans 'Voir la carte' %}">
                   <i class="fas fa-map-marked-alt"></i>
                 </a>
-                <form method="post" action="{% url 'actor_delete' actor.pk %}" class="d-inline"
-                      onsubmit="return confirm('Supprimer {{ actor.name }} ?')">
+                <form method="post" action="{% url 'actor_import' %}" class="d-inline"
+                      onsubmit="if (!confirm('{% blocktrans with name=actor.name|escapejs %}Ré-importer {{ name }} depuis Wikidata ? Les données existantes seront mises à jour.{% endblocktrans %}')) return false; this.querySelector('i').className = 'fas fa-sync-alt fa-spin'; this.querySelector('button').disabled = true;">
                   {% csrf_token %}
-                  <button type="submit" class="btn btn-xs btn-danger" title="Supprimer">
+                  <input type="hidden" name="wikidata_id" value="{{ actor.wikidata_id }}">
+                  <button type="submit" class="btn btn-xs btn-info" title="{% trans 'Ré-importer depuis Wikidata' %}">
+                    <i class="fas fa-sync-alt"></i>
+                  </button>
+                </form>
+                <form method="post" action="{% url 'actor_delete' actor.pk %}" class="d-inline"
+                      onsubmit="return confirm('{% blocktrans with name=actor.name|escapejs %}Supprimer {{ name }} ?{% endblocktrans %}')">
+                  {% csrf_token %}
+                  <button type="submit" class="btn btn-xs btn-danger" title="{% trans 'Supprimer' %}">
                     <i class="fas fa-trash"></i>
                   </button>
                 </form>
@@ -194,7 +206,7 @@
         {% else %}
         <div class="text-center p-4 text-muted">
           <i class="fas fa-users fa-3x mb-3" style="color:#dee2e6;"></i>
-          <p>Aucun acteur importé pour le moment.</p>
+          <p>{% trans "Aucun acteur importé pour le moment." %}</p>
         </div>
         {% endif %}
       </div>

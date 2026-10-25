@@ -1,11 +1,16 @@
+import unicodedata
+
 import folium
 from django.shortcuts import render, redirect
 from django.contrib import messages
-from django.db.models import Q
+from django.contrib.auth.decorators import login_required
+from django.db.models import Count, Max, Min, Q
+from django.utils.html import escape
+from django.utils.translation import gettext as _, ngettext
 
 from .models import Film, Actor, FilmActor, ShootingLocation
 from .forms import FilmSearchForm, ActorSearchForm, LocationSearchForm, AdminImportForm, ActorImportForm
-from .wikidata_service import fetch_film_data, fetch_actor_data, fetch_film_cast_ids, fetch_actor_films_in_db
+from .wikidata_service import fetch_film_data, fetch_actor_data, fetch_actor_films_in_db
 
 
 def location_autocomplete(request):
@@ -29,7 +34,7 @@ def location_autocomplete(request):
     )
     results = (
         [{'label': n, 'value': n} for n in names] +
-        [{'label': f'{c} (pays)', 'value': c} for c in countries]
+        [{'label': _('%(country)s (pays)') % {'country': c}, 'value': c} for c in countries]
     )
     return JsonResponse(results, safe=False)
 
@@ -58,14 +63,35 @@ def home_view(request):
     return redirect('film_map')
 
 
-# Les tuiles CartoDB exigent désormais une clé API ; OpenStreetMap reste libre d'accès.
-MAP_TILES = 'OpenStreetMap'
+# Tuiles OpenStreetMap France : libres d'accès, sans clé API.
+# Pas les serveurs tile.openstreetmap.org : ils bloquent les requêtes sans en-tête Referer,
+# et Firefox n'en envoie jamais depuis une page locale (127.0.0.1 / localhost).
+# CartoDB, lui, exige désormais une clé API.
+MAP_TILES = 'https://{s}.tile.openstreetmap.fr/osmfr/{z}/{x}/{y}.png'
+MAP_ATTRIBUTION = (
+    '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors, '
+    'tiles <a href="https://www.openstreetmap.fr">OpenStreetMap France</a>'
+)
 
 MARKER_COLORS = [
     'red', 'blue', 'green', 'purple', 'orange', 'darkred',
     'darkblue', 'darkgreen', 'cadetblue', 'darkpurple',
-    'pink', 'lightblue', 'lightgreen', 'gray', 'black',
+    'pink', 'lightblue', 'lightgreen', 'gray',
 ]
+# Réservée aux lieux où plusieurs films ont été tournés (carte « Films par lieu »)
+SHARED_MARKER_COLOR = 'black'
+# Teintes réelles des marqueurs Leaflet.awesome-markers, pour que la légende corresponde
+MARKER_CSS_COLORS = {
+    'red': '#d63e2a', 'blue': '#38aadd', 'green': '#72b026', 'purple': '#d252b9',
+    'orange': '#f69730', 'darkred': '#a23336', 'darkblue': '#0067a3', 'darkgreen': '#728224',
+    'cadetblue': '#436978', 'darkpurple': '#5b396b', 'pink': '#ff91ea', 'lightblue': '#8adaff',
+    'lightgreen': '#bbf970', 'gray': '#575757', 'black': '#303030',
+}
+
+
+def _non_empty(values):
+    """Retire les valeurs vides : un ré-import n'efface jamais une donnée déjà en base."""
+    return {k: v for k, v in values.items() if v is not None and v != ''}
 
 
 def _fit_map(fmap, valid_lats, valid_lons):
@@ -84,7 +110,7 @@ def _build_map(locations_qs, center=None, zoom=4):
     if center is None:
         center = [20, 0]
 
-    fmap = folium.Map(location=center, zoom_start=zoom, tiles=MAP_TILES)
+    fmap = folium.Map(location=center, zoom_start=zoom, tiles=MAP_TILES, attr=MAP_ATTRIBUTION)
     valid_lats, valid_lons = [], []
 
     for loc in locations_qs:
@@ -110,19 +136,49 @@ def _build_map(locations_qs, center=None, zoom=4):
     return fmap
 
 
+def _film_colors(films):
+    """Une couleur de marqueur par film, dans l'ordre de la liste."""
+    return {film.id: MARKER_COLORS[i % len(MARKER_COLORS)] for i, film in enumerate(films)}
+
+
+def _film_label(film):
+    year = f" ({film.release_date.year})" if film.release_date else ""
+    return f"{escape(film.title)}{year}"
+
+
+def _add_film_legend(fmap, films, film_colors):
+    """Légende en bas à droite de la carte : une pastille de couleur par film."""
+    if not films:
+        return
+    dot = 'display:inline-block;width:12px;height:12px;border-radius:50%;margin-right:6px;'
+    entries = [(film_colors[film.id], _film_label(film)) for film in films]
+    items = ''.join(
+        f'<div style="margin:3px 0">'
+        f'<span style="{dot}background:{MARKER_CSS_COLORS.get(color, "#888")}"></span>{label}'
+        f'</div>'
+        for color, label in entries
+    )
+    legend_html = (
+        '<div style="position:fixed;bottom:30px;right:10px;z-index:1000;'
+        'background:white;padding:12px 16px;border-radius:8px;'
+        'box-shadow:0 2px 8px rgba(0,0,0,.25);max-width:280px;'
+        'max-height:320px;overflow-y:auto;font-size:13px;">'
+        f'<strong style="display:block;margin-bottom:6px">{escape(_("Films"))}</strong>'
+        + items +
+        '</div>'
+    )
+    fmap.get_root().html.add_child(folium.Element(legend_html))
+
+
 def _build_actor_map(films_qs, center=None, zoom=3):
     """Carte acteur — une couleur par film + légende HTML."""
     if center is None:
         center = [20, 0]
 
-    fmap = folium.Map(location=center, zoom_start=zoom, tiles=MAP_TILES)
+    fmap = folium.Map(location=center, zoom_start=zoom, tiles=MAP_TILES, attr=MAP_ATTRIBUTION)
     valid_lats, valid_lons = [], []
 
-    # Attribuer une couleur à chaque film
-    film_colors = {
-        film.id: MARKER_COLORS[i % len(MARKER_COLORS)]
-        for i, film in enumerate(films_qs)
-    }
+    film_colors = _film_colors(films_qs)
 
     for film in films_qs:
         color = film_colors[film.id]
@@ -146,42 +202,7 @@ def _build_actor_map(films_qs, center=None, zoom=3):
             ).add_to(fmap)
 
     _fit_map(fmap, valid_lats, valid_lons)
-
-    # Légende
-    if film_colors:
-        dot = (
-            'display:inline-block;width:12px;height:12px;'
-            'border-radius:50%;margin-right:6px;'
-        )
-        items = []
-        for film in films_qs:
-            color = film_colors[film.id]
-            # Correspondance couleur Folium → couleur CSS
-            css_colors = {
-                'red': '#d63031', 'blue': '#0984e3', 'green': '#00b894',
-                'purple': '#6c5ce7', 'orange': '#e17055', 'darkred': '#922b21',
-                'darkblue': '#1a5276', 'darkgreen': '#1e8449', 'cadetblue': '#5dade2',
-                'darkpurple': '#7d3c98', 'pink': '#fd79a8', 'lightblue': '#74b9ff',
-                'lightgreen': '#55efc4', 'gray': '#636e72', 'black': '#2d3436',
-            }
-            css = css_colors.get(color, '#888')
-            year = f" ({film.release_date.year})" if film.release_date else ""
-            items.append(
-                f'<div style="margin:3px 0">'
-                f'<span style="{dot}background:{css}"></span>'
-                f'{film.title}{year}'
-                f'</div>'
-            )
-        legend_html = (
-            '<div style="position:fixed;bottom:30px;right:10px;z-index:1000;'
-            'background:white;padding:12px 16px;border-radius:8px;'
-            'box-shadow:0 2px 8px rgba(0,0,0,.25);max-width:280px;'
-            'max-height:320px;overflow-y:auto;font-size:13px;">'
-            '<strong style="display:block;margin-bottom:6px">Films</strong>'
-            + ''.join(items) +
-            '</div>'
-        )
-        fmap.get_root().html.add_child(folium.Element(legend_html))
+    _add_film_legend(fmap, list(films_qs), film_colors)
 
     return fmap
 
@@ -201,13 +222,13 @@ def film_map_view(request):
             try:
                 film = Film.objects.get(wikidata_id=wikidata_id)
             except Film.DoesNotExist:
-                error = f"Le film {wikidata_id} n'est pas encore dans la base de données. Utilisez la page d'import pour l'ajouter."
+                error = _("Le film %(id)s n'est pas encore dans la base de données. Utilisez la page d'import pour l'ajouter.") % {'id': wikidata_id}
         elif query:
             films_qs = Film.objects.filter(title__icontains=query)
             if films_qs.exists():
                 film = films_qs.first()
             else:
-                error = f"Aucun film trouvé pour '{query}'. Importez d'abord le film via la page d'import admin."
+                error = _("Aucun film trouvé pour « %(query)s ». Importez d'abord le film via la page d'import admin.") % {'query': query}
 
         if film:
             locations = film.locations.all()
@@ -220,8 +241,9 @@ def film_map_view(request):
         'locations': locations,
         'map_html': map_html,
         'error': error,
-        'page_title': 'Carte des lieux de tournage',
+        'page_title': _('Carte des lieux de tournage'),
         'active_page': 'film_map',
+        'all_films': Film.objects.annotate(n_locations=Count('locations')).order_by('title'),
     }
     return render(request, 'locations/film_map.html', context)
 
@@ -236,9 +258,14 @@ def actor_map_view(request):
 
     if form.is_valid():
         actor_name = form.cleaned_data.get('actor_name', '').strip()
+        # Lien depuis la liste « Acteurs en base » : l'identifiant évite toute ambiguïté de nom
+        actor_id = request.GET.get('actor_id', '').strip().upper()
 
-        if actor_name:
-            actors_qs = Actor.objects.filter(name__icontains=actor_name)
+        if actor_id or actor_name:
+            if actor_id:
+                actors_qs = Actor.objects.filter(wikidata_id=actor_id)
+            else:
+                actors_qs = Actor.objects.filter(name__icontains=actor_name)
             if actors_qs.exists():
                 actor = actors_qs.first()
                 film_ids = FilmActor.objects.filter(actor=actor).values_list('film_id', flat=True)
@@ -250,9 +277,9 @@ def actor_map_view(request):
                     fmap = _build_actor_map(films_with_locs)
                     map_html = fmap._repr_html_()
                 else:
-                    error = f"Aucun lieu de tournage trouvé pour {actor.name}. Vérifiez que ses films ont été importés avec leurs lieux."
+                    error = _("Aucun lieu de tournage trouvé pour %(name)s. Vérifiez que ses films ont été importés avec leurs lieux.") % {'name': actor.name}
             else:
-                error = f"Acteur '{actor_name}' non trouvé dans la base de données. Importez d'abord ses films via la page d'import admin."
+                error = _("Acteur « %(name)s » non trouvé dans la base de données. Importez d'abord ses films via la page d'import admin.") % {'name': actor_name or actor_id}
 
     context = {
         'form': form,
@@ -261,77 +288,118 @@ def actor_map_view(request):
         'locations': locations,
         'map_html': map_html,
         'error': error,
-        'page_title': "Carte des tournages d'un acteur",
+        'page_title': _("Carte des tournages d'un acteur"),
         'active_page': 'actor_map',
+        'all_actors': Actor.objects.annotate(n_films=Count('actor_films')).order_by('name'),
     }
     return render(request, 'locations/actor_map.html', context)
 
 
+def _all_locations():
+    """Lieux distincts en base (un par identifiant Wikidata) avec leur nombre de films, triés par nom."""
+    locations = (
+        ShootingLocation.objects
+        .values('wikidata_id')
+        .annotate(name=Min('name'), country=Max('country'), n_films=Count('film', distinct=True))
+    )
+    # Tri en Python pour ignorer accents et casse (« Écosse » avec les E, pas après Z)
+    return sorted(
+        locations,
+        key=lambda loc: unicodedata.normalize('NFD', loc['name']).encode('ascii', 'ignore').decode().casefold(),
+    )
+
+
 def location_films_view(request):
     form = LocationSearchForm(request.GET or None)
-    rows = []       # list of (shooting_location, film) for the table
+    films = []
     map_html = None
     error = None
 
+    location_id = ''
     if form.is_valid():
         location_name = form.cleaned_data.get('location_name', '').strip()
+        # Lien depuis la liste « Lieux en base » : l'identifiant désigne exactement ce lieu
+        location_id = request.GET.get('location_id', '').strip().upper()
 
-        if location_name:
+        if location_id or location_name:
+            if location_id:
+                lookup = Q(wikidata_id=location_id)
+            else:
+                lookup = Q(name__icontains=location_name) | Q(country__icontains=location_name)
             sls = (
                 ShootingLocation.objects
-                .filter(
-                    Q(name__icontains=location_name) |
-                    Q(country__icontains=location_name)
-                )
+                .filter(lookup)
                 .select_related('film')
                 .order_by('name', 'film__title')
             )
 
             if sls.exists():
-                rows = [(sl, sl.film) for sl in sls]
+                # Films trouvés, du plus récent au plus ancien (même ordre que la carte d'un acteur)
+                films = sorted(
+                    {sl.film for sl in sls},
+                    key=lambda f: (f.release_date is None, -(f.release_date.toordinal() if f.release_date else 0), f.title),
+                )
 
-                # Carte : un marqueur par lieu (dédupliqué par wikidata_id)
-                seen = set()
-                map_locs = []
+                # Un marqueur par lieu (dédupliqué par wikidata_id), avec les films qui y ont été tournés
+                by_location = {}
                 for sl in sls:
-                    if sl.wikidata_id not in seen and sl.latitude is not None:
-                        seen.add(sl.wikidata_id)
-                        map_locs.append(sl)
+                    if sl.latitude is not None:
+                        by_location.setdefault(sl.wikidata_id, (sl, []))[1].append(sl.film)
 
-                if map_locs:
-                    fmap = folium.Map(location=[20, 0], zoom_start=4, tiles=MAP_TILES)
+                if by_location:
+                    # Seuls les films ayant au moins un lieu à eux seuls reçoivent une couleur ;
+                    # les autres n'apparaissent que sur des marqueurs partagés et en prennent la couleur
+                    own = {loc_films[0].id for _loc, loc_films in by_location.values() if len(loc_films) == 1}
+                    film_colors = _film_colors([f for f in films if f.id in own])
+                    film_colors.update({f.id: SHARED_MARKER_COLOR for f in films if f.id not in own})
+                    fmap = folium.Map(location=[20, 0], zoom_start=4, tiles=MAP_TILES, attr=MAP_ATTRIBUTION)
                     lats, lons = [], []
-                    for loc in map_locs:
+                    for loc, loc_films in by_location.values():
                         lats.append(loc.latitude)
                         lons.append(loc.longitude)
+                        shared = len(loc_films) > 1
                         popup_html = (
-                            f'<div style="min-width:150px">'
-                            f'<strong>{loc.name}</strong><br>'
-                            f'{loc.country or ""}'
+                            f'<div style="min-width:160px">'
+                            f'<strong>{escape(loc.name)}</strong><br>'
+                            f'{escape(loc.country or "")}'
+                            + ''.join(f'<br><em>{_film_label(f)}</em>' for f in loc_films) +
                             f'</div>'
+                        )
+                        tooltip = (
+                            ngettext("%(count)d film", "%(count)d films", len(loc_films)) % {'count': len(loc_films)}
+                            if shared else loc_films[0].title
                         )
                         folium.Marker(
                             location=[loc.latitude, loc.longitude],
-                            popup=folium.Popup(popup_html, max_width=220),
-                            tooltip=loc.name,
-                            icon=folium.Icon(color='green', icon='map-marker', prefix='fa'),
+                            popup=folium.Popup(popup_html, max_width=260),
+                            tooltip=f"{loc.name} — {tooltip}",
+                            icon=folium.Icon(
+                                color=SHARED_MARKER_COLOR if shared else film_colors[loc_films[0].id],
+                                icon='film', prefix='fa',
+                            ),
                         ).add_to(fmap)
                     _fit_map(fmap, lats, lons)
+                    _add_film_legend(
+                        fmap, [f for f in films if f.id in own] + [f for f in films if f.id not in own], film_colors,
+                    )
                     map_html = fmap._repr_html_()
             else:
-                error = f"Aucun lieu de tournage trouvé pour '{location_name}'."
+                error = _("Aucun lieu de tournage trouvé pour « %(name)s ».") % {'name': location_name or location_id}
 
     context = {
         'form': form,
-        'rows': rows,
+        'films': films,
         'map_html': map_html,
         'error': error,
-        'page_title': 'Films par lieu de tournage',
+        'page_title': _('Films par lieu de tournage'),
         'active_page': 'location_films',
+        'all_locations': _all_locations(),
+        'location_id': location_id,
     }
     return render(request, 'locations/location_films.html', context)
 
 
+@login_required
 def actor_import_view(request):
     form = ActorImportForm(request.POST or None)
     imported_actor = None
@@ -356,20 +424,27 @@ def actor_import_view(request):
 
             actor, actor_created = Actor.objects.update_or_create(
                 wikidata_id=wikidata_id,
-                defaults={
+                defaults=_non_empty({
                     'name': data['name'],
                     'birth_date': birth_date,
                     'photo_url': data.get('photo_url', ''),
-                }
+                })
             )
             imported_actor = actor
 
-            # Croiser avec les films en base via VALUES (requête ciblée)
+            # Croiser avec le casting des films déjà en base
             all_film_ids = list(Film.objects.values_list('wikidata_id', flat=True))
-            matched_ids = fetch_actor_films_in_db(wikidata_id, all_film_ids)
+            links_checked = True
+            try:
+                matched_ids = fetch_actor_films_in_db(wikidata_id, all_film_ids)
+            except RuntimeError as e:
+                matched_ids, links_checked = set(), False
+                messages.warning(request, _(
+                    "Les films de « %(name)s » n'ont pas pu être vérifiés (%(error)s). Relancez le ré-import plus tard."
+                ) % {'name': actor.name, 'error': e})
             links_created = 0
             for film in Film.objects.filter(wikidata_id__in=matched_ids):
-                _, created = FilmActor.objects.get_or_create(film=film, actor=actor)
+                _link, created = FilmActor.objects.get_or_create(film=film, actor=actor)
                 if created:
                     links_created += 1
 
@@ -377,12 +452,18 @@ def actor_import_view(request):
                 'actor_created': actor_created,
                 'films_linked': links_created,
             }
-            action = "importé" if actor_created else "mis à jour"
-            msg = f"Acteur '{actor.name}' {action} avec succès !"
-            if links_created:
-                msg += f" {links_created} film(s) en base liés."
+            if actor_created:
+                msg = _("Acteur « %(name)s » importé avec succès !") % {'name': actor.name}
             else:
-                msg += " Aucun film en base ne correspond à sa filmographie."
+                msg = _("Acteur « %(name)s » mis à jour avec succès !") % {'name': actor.name}
+            if links_created:
+                msg += " " + ngettext(
+                    "%(count)d film en base lié.",
+                    "%(count)d films en base liés.",
+                    links_created,
+                ) % {'count': links_created}
+            elif links_checked and not actor.actor_films.exists():
+                msg += " " + _("Aucun film en base ne correspond à sa filmographie.")
             messages.success(request, msg)
             form = ActorImportForm()
 
@@ -391,39 +472,43 @@ def actor_import_view(request):
         except RuntimeError as e:
             messages.error(request, str(e))
         except Exception as e:
-            messages.error(request, f"Erreur inattendue : {e}")
+            messages.error(request, _("Erreur inattendue : %(error)s") % {'error': e})
 
     context = {
         'form': form,
         'imported_actor': imported_actor,
         'import_stats': import_stats,
-        'page_title': "Import acteur Wikidata",
+        'page_title': _("Import acteur Wikidata"),
         'active_page': 'actor_import',
-        'recent_actors': Actor.objects.order_by('-id')[:10],
+        'section': 'back',
+        'recent_actors': Actor.objects.order_by('-updated_at', '-id')[:10],
     }
     return render(request, 'locations/actor_import.html', context)
 
 
+@login_required
 def film_delete_view(request, pk):
     if request.method == 'POST':
         film = Film.objects.filter(pk=pk).first()
         if film:
             title = film.title
             film.delete()
-            messages.success(request, f"Film '{title}' supprimé.")
+            messages.success(request, _("Film « %(title)s » supprimé.") % {'title': title})
     return redirect('admin_import')
 
 
+@login_required
 def actor_delete_view(request, pk):
     if request.method == 'POST':
         actor = Actor.objects.filter(pk=pk).first()
         if actor:
             name = actor.name
             actor.delete()
-            messages.success(request, f"Acteur '{name}' supprimé.")
+            messages.success(request, _("Acteur « %(name)s » supprimé.") % {'name': name})
     return redirect('actor_import')
 
 
+@login_required
 def admin_import_view(request):
     form = AdminImportForm(request.POST or None)
     imported_film = None
@@ -451,11 +536,11 @@ def admin_import_view(request):
             # Save or update Film
             film, film_created = Film.objects.update_or_create(
                 wikidata_id=wikidata_id,
-                defaults={
+                defaults=_non_empty({
                     'title': data['title'],
                     'release_date': release_date,
                     'poster_url': data.get('poster_url', ''),
-                }
+                })
             )
             imported_film = film
 
@@ -465,22 +550,22 @@ def admin_import_view(request):
                 ShootingLocation.objects.update_or_create(
                     wikidata_id=loc_data['wikidata_id'],
                     film=film,
-                    defaults={
+                    defaults=_non_empty({
                         'name': loc_data['name'],
                         'latitude': loc_data.get('latitude'),
                         'longitude': loc_data.get('longitude'),
                         'country': loc_data.get('country', ''),
-                    }
+                    })
                 )
                 locations_saved += 1
 
             # Croiser le casting Wikidata avec les acteurs déjà en base
             actors_linked = 0
-            cast_ids = fetch_film_cast_ids(wikidata_id)
+            cast_ids = data.get('cast_ids', set())
             if cast_ids:
                 matching_actors = Actor.objects.filter(wikidata_id__in=cast_ids)
                 for actor in matching_actors:
-                    _, created = FilmActor.objects.get_or_create(film=film, actor=actor)
+                    _link, created = FilmActor.objects.get_or_create(film=film, actor=actor)
                     if created:
                         actors_linked += 1
 
@@ -490,10 +575,21 @@ def admin_import_view(request):
                 'actors_linked': actors_linked,
             }
 
-            action = "importé" if film_created else "mis à jour"
-            msg = f"Film '{film.title}' {action} avec succès ! {locations_saved} lieu(x) enregistré(s)."
+            if film_created:
+                msg = _("Film « %(title)s » importé avec succès !") % {'title': film.title}
+            else:
+                msg = _("Film « %(title)s » mis à jour avec succès !") % {'title': film.title}
+            msg += " " + ngettext(
+                "%(count)d lieu enregistré.",
+                "%(count)d lieux enregistrés.",
+                locations_saved,
+            ) % {'count': locations_saved}
             if actors_linked:
-                msg += f" {actors_linked} acteur(s) déjà en base liés automatiquement."
+                msg += " " + ngettext(
+                    "%(count)d acteur déjà en base lié automatiquement.",
+                    "%(count)d acteurs déjà en base liés automatiquement.",
+                    actors_linked,
+                ) % {'count': actors_linked}
             messages.success(request, msg)
             form = AdminImportForm()
 
@@ -502,14 +598,15 @@ def admin_import_view(request):
         except RuntimeError as e:
             messages.error(request, str(e))
         except Exception as e:
-            messages.error(request, f"Erreur inattendue lors de l'import: {e}")
+            messages.error(request, _("Erreur inattendue lors de l'import : %(error)s") % {'error': e})
 
     context = {
         'form': form,
         'imported_film': imported_film,
         'import_stats': import_stats,
-        'page_title': "Import de données Wikidata",
+        'page_title': _("Import de données Wikidata"),
         'active_page': 'admin_import',
-        'recent_films': Film.objects.order_by('-created_at')[:10],
+        'section': 'back',
+        'recent_films': Film.objects.order_by('-updated_at', '-created_at')[:10],
     }
     return render(request, 'locations/admin_import.html', context)

@@ -1,0 +1,866 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-10-25 19:23+0100\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: en\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+#: locations/forms.py:7 templates/locations/film_map.html:20
+msgid "Titre du film"
+msgstr "Film title"
+
+#: locations/forms.py:12 templates/locations/film_map.html:23
+msgid "Ex : Inception, The Dark Knight..."
+msgstr "e.g. Inception, The Dark Knight..."
+
+#: locations/forms.py:16 locations/forms.py:72
+msgid "Identifiant Wikidata du film"
+msgstr "Film Wikidata ID"
+
+#: locations/forms.py:21
+msgid "Ex : Q25188"
+msgstr "e.g. Q25188"
+
+#: locations/forms.py:28
+msgid "Nom de l'acteur"
+msgstr "Actor name"
+
+#: locations/forms.py:33 templates/locations/actor_map.html:25
+msgid "Ex : Leonardo DiCaprio, Marion Cotillard..."
+msgstr "e.g. Leonardo DiCaprio, Marion Cotillard..."
+
+#: locations/forms.py:40 templates/locations/location_films.html:21
+msgid "Nom du lieu"
+msgstr "Location name"
+
+#: locations/forms.py:45
+msgid "Ex : Paris, New York, Londres..."
+msgstr "e.g. Paris, New York, London..."
+
+#: locations/forms.py:52
+msgid "Identifiant Wikidata de l'acteur"
+msgstr "Actor Wikidata ID"
+
+#: locations/forms.py:56
+msgid "Ex : Q38111 (Leonardo DiCaprio)"
+msgstr "e.g. Q38111 (Leonardo DiCaprio)"
+
+#: locations/forms.py:58
+msgid ""
+"Entrez l'identifiant Wikidata de l'acteur (format : Q suivi de chiffres)"
+msgstr "Enter the actor's Wikidata ID (format: Q followed by digits)"
+
+#: locations/forms.py:64
+msgid "L'identifiant Wikidata doit commencer par 'Q' (ex: Q38111)"
+msgstr "The Wikidata ID must start with 'Q' (e.g. Q38111)"
+
+#: locations/forms.py:66
+msgid "L'identifiant Wikidata doit être au format Q suivi de chiffres"
+msgstr "The Wikidata ID must be Q followed by digits"
+
+#: locations/forms.py:76
+msgid "Ex : Q25188 (Inception)"
+msgstr "e.g. Q25188 (Inception)"
+
+#: locations/forms.py:78
+msgid ""
+"Entrez l'identifiant Wikidata du film à importer (format: Q suivi de "
+"chiffres)"
+msgstr ""
+"Enter the Wikidata ID of the film to import (format: Q followed by digits)"
+
+#: locations/forms.py:84
+msgid "L'identifiant Wikidata doit commencer par 'Q' (ex: Q25188)"
+msgstr "The Wikidata ID must start with 'Q' (e.g. Q25188)"
+
+#: locations/forms.py:86
+msgid ""
+"L'identifiant Wikidata doit être au format Q suivi de chiffres (ex: Q25188)"
+msgstr "The Wikidata ID must be Q followed by digits (e.g. Q25188)"
+
+#: locations/models.py:17 templates/locations/admin_import.html:161
+msgid "Film"
+msgstr "Film"
+
+#: locations/models.py:18 templates/locations/actor_import.html:161
+msgid "Films"
+msgstr "Films"
+
+#: locations/models.py:33 templates/locations/actor_import.html:159
+msgid "Acteur"
+msgstr "Actor"
+
+#: locations/models.py:34
+msgid "Acteurs"
+msgstr "Actors"
+
+#: locations/models.py:43
+#, python-format
+msgid "%(actor)s dans %(film)s"
+msgstr "%(actor)s in %(film)s"
+
+#: locations/models.py:47
+msgid "Film-Acteur"
+msgstr "Film–actor link"
+
+#: locations/models.py:48
+msgid "Films-Acteurs"
+msgstr "Film–actor links"
+
+#: locations/models.py:64
+msgid "Lieu de tournage"
+msgstr "Filming location"
+
+#: locations/models.py:65
+msgid "Lieux de tournage"
+msgstr "Filming locations"
+
+#: locations/views.py:37
+#, python-format
+msgid "%(country)s (pays)"
+msgstr "%(country)s (country)"
+
+#: locations/views.py:225
+#, python-format
+msgid ""
+"Le film %(id)s n'est pas encore dans la base de données. Utilisez la page "
+"d'import pour l'ajouter."
+msgstr "Film %(id)s is not in the database yet. Use the import page to add it."
+
+#: locations/views.py:231
+#, python-format
+msgid ""
+"Aucun film trouvé pour « %(query)s ». Importez d'abord le film via la page "
+"d'import admin."
+msgstr ""
+"No film found for “%(query)s”. Import the film first from the admin import "
+"page."
+
+#: locations/views.py:244
+msgid "Carte des lieux de tournage"
+msgstr "Filming locations map"
+
+#: locations/views.py:280
+#, python-format
+msgid ""
+"Aucun lieu de tournage trouvé pour %(name)s. Vérifiez que ses films ont été "
+"importés avec leurs lieux."
+msgstr ""
+"No filming locations found for %(name)s. Check that their films were "
+"imported with their locations."
+
+#: locations/views.py:282
+#, python-format
+msgid ""
+"Acteur « %(name)s » non trouvé dans la base de données. Importez d'abord ses "
+"films via la page d'import admin."
+msgstr ""
+"Actor “%(name)s” not found in the database. Import their films first from "
+"the admin import page."
+
+#: locations/views.py:291
+msgid "Carte des tournages d'un acteur"
+msgstr "An actor's filming locations"
+
+#: locations/views.py:369
+#, python-format
+msgid "%(count)d film"
+msgid_plural "%(count)d films"
+msgstr[0] "%(count)d film"
+msgstr[1] "%(count)d films"
+
+#: locations/views.py:387
+#, python-format
+msgid "Aucun lieu de tournage trouvé pour « %(name)s »."
+msgstr "No filming location found for “%(name)s”."
+
+#: locations/views.py:394
+msgid "Films par lieu de tournage"
+msgstr "Films by filming location"
+
+#: locations/views.py:443
+#, python-format
+msgid ""
+"Les films de « %(name)s » n'ont pas pu être vérifiés (%(error)s). Relancez "
+"le ré-import plus tard."
+msgstr ""
+"The films of “%(name)s” could not be checked (%(error)s). Try the re-import "
+"again later."
+
+#: locations/views.py:456
+#, python-format
+msgid "Acteur « %(name)s » importé avec succès !"
+msgstr "Actor “%(name)s” imported successfully!"
+
+#: locations/views.py:458
+#, python-format
+msgid "Acteur « %(name)s » mis à jour avec succès !"
+msgstr "Actor “%(name)s” updated successfully!"
+
+#: locations/views.py:461
+#, python-format
+msgid "%(count)d film en base lié."
+msgid_plural "%(count)d films en base liés."
+msgstr[0] "%(count)d film in the database linked."
+msgstr[1] "%(count)d films in the database linked."
+
+#: locations/views.py:466
+msgid "Aucun film en base ne correspond à sa filmographie."
+msgstr "No film in the database matches their filmography."
+
+#: locations/views.py:475
+#, python-format
+msgid "Erreur inattendue : %(error)s"
+msgstr "Unexpected error: %(error)s"
+
+#: locations/views.py:481 templates/locations/actor_import.html:5
+msgid "Import acteur Wikidata"
+msgstr "Wikidata actor import"
+
+#: locations/views.py:496
+#, python-format
+msgid "Film « %(title)s » supprimé."
+msgstr "Film “%(title)s” deleted."
+
+#: locations/views.py:507
+#, python-format
+msgid "Acteur « %(name)s » supprimé."
+msgstr "Actor “%(name)s” deleted."
+
+#: locations/views.py:579
+#, python-format
+msgid "Film « %(title)s » importé avec succès !"
+msgstr "Film “%(title)s” imported successfully!"
+
+#: locations/views.py:581
+#, python-format
+msgid "Film « %(title)s » mis à jour avec succès !"
+msgstr "Film “%(title)s” updated successfully!"
+
+#: locations/views.py:583
+#, python-format
+msgid "%(count)d lieu enregistré."
+msgid_plural "%(count)d lieux enregistrés."
+msgstr[0] "%(count)d location saved."
+msgstr[1] "%(count)d locations saved."
+
+#: locations/views.py:589
+#, python-format
+msgid "%(count)d acteur déjà en base lié automatiquement."
+msgid_plural "%(count)d acteurs déjà en base liés automatiquement."
+msgstr[0] "%(count)d actor already in the database linked automatically."
+msgstr[1] "%(count)d actors already in the database linked automatically."
+
+#: locations/views.py:601
+#, python-format
+msgid "Erreur inattendue lors de l'import : %(error)s"
+msgstr "Unexpected error during import: %(error)s"
+
+#: locations/views.py:607
+msgid "Import de données Wikidata"
+msgstr "Wikidata data import"
+
+#: locations/wikidata_service.py:66 locations/wikidata_service.py:152
+#, python-format
+msgid "Impossible de récupérer les données pour %(id)s : %(error)s"
+msgstr "Could not fetch data for %(id)s: %(error)s"
+
+#: locations/wikidata_service.py:69
+#, python-format
+msgid "Aucun résultat trouvé pour %(id)s. Vérifiez l'identifiant Wikidata."
+msgstr "No result found for %(id)s. Check the Wikidata ID."
+
+#: locations/wikidata_service.py:136
+#, python-format
+msgid ""
+"Titre non trouvé pour %(id)s. Cet identifiant n'est peut-être pas un film."
+msgstr "No title found for %(id)s. This ID may not be a film."
+
+#: locations/wikidata_service.py:200
+#, python-format
+msgid "Acteur non trouvé pour %(id)s."
+msgstr "No actor found for %(id)s."
+
+#: templates/base.html:83 templates/base.html:209
+msgid "Accueil"
+msgstr "Home"
+
+#: templates/base.html:133
+msgid "Import film"
+msgstr "Import film"
+
+#: templates/base.html:140 templates/locations/actor_import.html:4
+msgid "Import acteur"
+msgstr "Import actor"
+
+#: templates/base.html:147
+msgid "Admin Django"
+msgstr "Django admin"
+
+#: templates/base.html:156
+msgid "Déconnexion"
+msgstr "Log out"
+
+#: templates/base.html:166 templates/locations/film_map.html:4
+#: templates/locations/film_map.html:5
+msgid "Carte d'un film"
+msgstr "Film map"
+
+#: templates/base.html:173 templates/locations/actor_map.html:4
+#: templates/locations/actor_map.html:5
+msgid "Carte d'un acteur"
+msgstr "Actor map"
+
+#: templates/base.html:180 templates/locations/location_films.html:4
+#: templates/locations/location_films.html:5
+msgid "Films par lieu"
+msgstr "Films by location"
+
+#: templates/base.html:187
+msgid "Administration"
+msgstr "Administration"
+
+#: templates/base.html:227
+msgid "Fermer"
+msgstr "Close"
+
+#: templates/base.html:243
+msgid "Données issues de"
+msgstr "Data from"
+
+#: templates/base.html:245
+msgid "Cartes"
+msgstr "Maps"
+
+#: templates/includes/language_switch.html:7
+msgid "Langue"
+msgstr "Language"
+
+#: templates/locations/actor_import.html:14
+msgid "Importer un acteur depuis Wikidata"
+msgstr "Import an actor from Wikidata"
+
+#: templates/locations/actor_import.html:20
+#, python-format
+msgid ""
+"Entrez l'identifiant Wikidata d'un acteur pour importer son profil et sa "
+"filmographie. Les lieux de tournage ne sont pas importés ici (utilisez <a "
+"href=\"%(import_url)s\">Import film</a> pour cela)."
+msgstr ""
+"Enter an actor's Wikidata ID to import their profile and filmography. "
+"Filming locations are not imported here (use <a "
+"href=\"%(import_url)s\">Import film</a> for that)."
+
+#: templates/locations/actor_import.html:44
+msgid "Importer l'acteur"
+msgstr "Import actor"
+
+#: templates/locations/actor_import.html:54
+#: templates/locations/admin_import.html:52
+msgid "Comment trouver un identifiant Wikidata ?"
+msgstr "How do I find a Wikidata ID?"
+
+#: templates/locations/actor_import.html:59
+#: templates/locations/admin_import.html:57
+msgid ""
+"Allez sur <a href=\"https://www.wikidata.org\" target=\"_blank\">www."
+"wikidata.org</a>"
+msgstr ""
+"Go to <a href=\"https://www.wikidata.org\" target=\"_blank\">www.wikidata."
+"org</a>"
+
+#: templates/locations/actor_import.html:60
+msgid "Cherchez l'acteur dans la barre de recherche"
+msgstr "Search for the actor in the search bar"
+
+#: templates/locations/actor_import.html:61
+msgid "Cliquez sur son nom dans les résultats"
+msgstr "Click their name in the results"
+
+#: templates/locations/actor_import.html:62
+#: templates/locations/admin_import.html:60
+msgid "L'identifiant apparaît dans l'URL :"
+msgstr "The ID appears in the URL:"
+
+#: templates/locations/actor_import.html:65
+msgid "Acteurs populaires à tester :"
+msgstr "Popular actors to try:"
+
+#: templates/locations/actor_import.html:95
+#: templates/locations/admin_import.html:93
+msgid "Import réussi"
+msgstr "Import successful"
+
+#: templates/locations/actor_import.html:112
+#: templates/locations/actor_map.html:89
+msgid "Naissance :"
+msgstr "Born:"
+
+#: templates/locations/actor_import.html:124
+#, python-format
+msgid "%(counter)s film lié"
+msgid_plural "%(counter)s films liés"
+msgstr[0] "%(counter)s linked film"
+msgstr[1] "%(counter)s linked films"
+
+#: templates/locations/actor_import.html:127
+#: templates/locations/admin_import.html:128
+msgid "Nouveau !"
+msgstr "New!"
+
+#: templates/locations/actor_import.html:129
+#: templates/locations/admin_import.html:130
+msgid "Mis à jour"
+msgstr "Updated"
+
+#: templates/locations/actor_import.html:137
+#: templates/locations/admin_import.html:138
+msgid "Voir sur la carte"
+msgstr "View on map"
+
+#: templates/locations/actor_import.html:140
+msgid "Importer un autre acteur"
+msgstr "Import another actor"
+
+#: templates/locations/actor_import.html:151
+msgid "Acteurs récemment importés"
+msgstr "Recently imported actors"
+
+#: templates/locations/actor_import.html:160
+msgid "ID Wikidata"
+msgstr "Wikidata ID"
+
+#: templates/locations/actor_import.html:162
+#: templates/locations/admin_import.html:164
+msgid "Action"
+msgstr "Action"
+
+#: templates/locations/actor_import.html:183
+#: templates/locations/admin_import.html:193
+msgid "Voir la carte"
+msgstr "View map"
+
+#: templates/locations/actor_import.html:187
+#, python-format
+msgid ""
+"Ré-importer %(name)s depuis Wikidata ? Les données existantes seront mises à "
+"jour."
+msgstr "Re-import %(name)s from Wikidata? Existing data will be updated."
+
+#: templates/locations/actor_import.html:190
+#: templates/locations/admin_import.html:200
+msgid "Ré-importer depuis Wikidata"
+msgstr "Re-import from Wikidata"
+
+#: templates/locations/actor_import.html:195
+#, python-format
+msgid "Supprimer %(name)s ?"
+msgstr "Delete %(name)s?"
+
+#: templates/locations/actor_import.html:197
+#: templates/locations/admin_import.html:207
+msgid "Supprimer"
+msgstr "Delete"
+
+#: templates/locations/actor_import.html:209
+msgid "Aucun acteur importé pour le moment."
+msgstr "No actors imported yet."
+
+#: templates/locations/actor_map.html:14
+msgid "Rechercher un acteur"
+msgstr "Search for an actor"
+
+#: templates/locations/actor_map.html:21
+msgid "Nom de l'acteur / actrice"
+msgstr "Actor / actress name"
+
+#: templates/locations/actor_map.html:30
+msgid "Cherchez dans la base de données locale (acteurs déjà importés)"
+msgstr "Searches the local database (already imported actors)"
+
+#: templates/locations/actor_map.html:34 templates/locations/film_map.html:36
+msgid "Afficher sur la carte"
+msgstr "Show on map"
+
+#: templates/locations/actor_map.html:43
+msgid "Acteurs en base"
+msgstr "Actors in the database"
+
+#: templates/locations/actor_map.html:48 templates/locations/film_map.html:50
+msgid "Filtrer la liste…"
+msgstr "Filter the list…"
+
+#: templates/locations/actor_map.html:55
+#, python-format
+msgid "%(counter)s film en base"
+msgid_plural "%(counter)s films en base"
+msgstr[0] "%(counter)s film in the database"
+msgstr[1] "%(counter)s films in the database"
+
+#: templates/locations/actor_map.html:59
+msgid "Aucun acteur en base."
+msgstr "No actors in the database."
+
+#: templates/locations/actor_map.html:66
+msgid "Non trouvé"
+msgstr "Not found"
+
+#: templates/locations/actor_map.html:69
+#: templates/locations/location_films.html:67
+msgid "Importer des films"
+msgstr "Import films"
+
+#: templates/locations/actor_map.html:89
+#: templates/locations/admin_import.html:109
+#: templates/locations/film_map.html:91
+msgid "Inconnue"
+msgstr "Unknown"
+
+#: templates/locations/actor_map.html:92 templates/locations/film_map.html:94
+msgid "Wikidata :"
+msgstr "Wikidata:"
+
+#: templates/locations/actor_map.html:98
+msgid "Films :"
+msgstr "Films:"
+
+#: templates/locations/actor_map.html:102 templates/locations/film_map.html:100
+msgid "Lieux de tournage :"
+msgstr "Filming locations:"
+
+#: templates/locations/actor_map.html:112
+msgid "Filmographie (en base)"
+msgstr "Filmography (in database)"
+
+#: templates/locations/actor_map.html:133
+msgid "Information"
+msgstr "Information"
+
+#: templates/locations/actor_map.html:137
+msgid ""
+"La carte affiche tous les lieux de tournage des films de cet acteur "
+"<strong>déjà importés</strong> dans la base de données."
+msgstr ""
+"The map shows every filming location of this actor's films <strong>already "
+"imported</strong> into the database."
+
+#: templates/locations/actor_map.html:144
+#, python-format
+msgid ""
+"Pour obtenir plus de films, utilisez la page <a "
+"href=\"%(import_url)s\">Import Wikidata</a>."
+msgstr ""
+"To get more films, use the <a href=\"%(import_url)s\">Wikidata import</a> "
+"page."
+
+#: templates/locations/actor_map.html:160
+#, python-format
+msgid "Tournages de %(name)s"
+msgstr "Filming locations of %(name)s"
+
+#: templates/locations/actor_map.html:161
+#: templates/locations/location_films.html:110
+#, python-format
+msgid "%(counter)s film"
+msgid_plural "%(counter)s films"
+msgstr[0] "%(counter)s film"
+msgstr[1] "%(counter)s films"
+
+#: templates/locations/actor_map.html:163 templates/locations/film_map.html:164
+msgid "Carte interactive"
+msgstr "Interactive map"
+
+#: templates/locations/actor_map.html:176
+msgid "Aucun acteur sélectionné"
+msgstr "No actor selected"
+
+#: templates/locations/actor_map.html:177
+msgid "Recherchez un acteur pour afficher l'ensemble de ses lieux de tournage."
+msgstr "Search for an actor to show all their filming locations."
+
+#: templates/locations/admin_import.html:4
+#: templates/locations/admin_import.html:5
+msgid "Import Wikidata"
+msgstr "Wikidata import"
+
+#: templates/locations/admin_import.html:14
+msgid "Importer un film depuis Wikidata"
+msgstr "Import a film from Wikidata"
+
+#: templates/locations/admin_import.html:19
+msgid ""
+"Entrez l'identifiant Wikidata d'un film pour importer automatiquement ses "
+"données : titre, date de sortie, lieux de tournage et acteurs principaux."
+msgstr ""
+"Enter a film's Wikidata ID to import its data automatically: title, release "
+"date, filming locations and main cast."
+
+#: templates/locations/admin_import.html:42
+msgid "Importer le film"
+msgstr "Import film"
+
+#: templates/locations/admin_import.html:58
+msgid "Cherchez le film dans la barre de recherche"
+msgstr "Search for the film in the search bar"
+
+#: templates/locations/admin_import.html:59
+msgid "Cliquez sur le film dans les résultats"
+msgstr "Click the film in the results"
+
+#: templates/locations/admin_import.html:63
+msgid "Films populaires à tester :"
+msgstr "Popular films to try:"
+
+#: templates/locations/admin_import.html:68
+#: templates/locations/film_map.html:151
+msgid "Amélie Poulain"
+msgstr "Amélie"
+
+#: templates/locations/admin_import.html:109
+#: templates/locations/film_map.html:91
+msgid "Sortie :"
+msgstr "Released:"
+
+#: templates/locations/admin_import.html:120
+#, python-format
+msgid "%(counter)s lieu"
+msgid_plural "%(counter)s lieux"
+msgstr[0] "%(counter)s location"
+msgstr[1] "%(counter)s locations"
+
+#: templates/locations/admin_import.html:124
+#, python-format
+msgid "%(counter)s acteur lié"
+msgid_plural "%(counter)s acteurs liés"
+msgstr[0] "%(counter)s linked actor"
+msgstr[1] "%(counter)s linked actors"
+
+#: templates/locations/admin_import.html:141
+msgid "Importer un autre film"
+msgstr "Import another film"
+
+#: templates/locations/admin_import.html:152
+msgid "Films récemment importés"
+msgstr "Recently imported films"
+
+#: templates/locations/admin_import.html:163
+msgid "Lieux"
+msgstr "Locations"
+
+#: templates/locations/admin_import.html:197
+#, python-format
+msgid ""
+"Ré-importer %(title)s depuis Wikidata ? Les données existantes seront mises "
+"à jour."
+msgstr "Re-import %(title)s from Wikidata? Existing data will be updated."
+
+#: templates/locations/admin_import.html:205
+#, python-format
+msgid "Supprimer %(title)s ?"
+msgstr "Delete %(title)s?"
+
+#: templates/locations/admin_import.html:219
+msgid "Aucun film importé pour le moment."
+msgstr "No films imported yet."
+
+#: templates/locations/admin_import.html:220
+msgid "Utilisez le formulaire ci-contre pour commencer !"
+msgstr "Use the form to get started!"
+
+#: templates/locations/film_map.html:14
+msgid "Rechercher un film"
+msgstr "Search for a film"
+
+#: templates/locations/film_map.html:29
+msgid "Identifiant Wikidata"
+msgstr "Wikidata ID"
+
+#: templates/locations/film_map.html:32
+msgid ""
+"Ex : <code>Q25188</code> pour Inception, <code>Q484048</code> pour Le "
+"Fabuleux destin d'Amélie Poulain"
+msgstr ""
+"e.g. <code>Q25188</code> for Inception, <code>Q484048</code> for Amélie"
+
+#: templates/locations/film_map.html:45
+msgid "Films en base"
+msgstr "Films in the database"
+
+#: templates/locations/film_map.html:57
+#, python-format
+msgid "%(counter)s lieu de tournage"
+msgid_plural "%(counter)s lieux de tournage"
+msgstr[0] "%(counter)s filming location"
+msgstr[1] "%(counter)s filming locations"
+
+#: templates/locations/film_map.html:61
+msgid "Aucun film en base."
+msgstr "No films in the database."
+
+#: templates/locations/film_map.html:68
+msgid "Erreur"
+msgstr "Error"
+
+#: templates/locations/film_map.html:71
+msgid "Importer ce film"
+msgstr "Import this film"
+
+#: templates/locations/film_map.html:110
+msgid "Liste des lieux"
+msgstr "Locations"
+
+#: templates/locations/film_map.html:138
+msgid "Astuce"
+msgstr "Tip"
+
+#: templates/locations/film_map.html:142
+msgid ""
+"Pour trouver l'identifiant Wikidata d'un film, cherchez-le sur <a "
+"href=\"https://www.wikidata.org\" target=\"_blank\">wikidata.org</a> et "
+"copiez le code <code>Q...</code> dans l'URL."
+msgstr ""
+"To find a film's Wikidata ID, search for it on <a href=\"https://www."
+"wikidata.org\" target=\"_blank\">wikidata.org</a> and copy the <code>Q...</"
+"code> code from the URL."
+
+#: templates/locations/film_map.html:148
+msgid "Exemples populaires :"
+msgstr "Popular examples:"
+
+#: templates/locations/film_map.html:152
+msgid "Le Seigneur des Anneaux"
+msgstr "The Lord of the Rings"
+
+#: templates/locations/film_map.html:164
+#, python-format
+msgid "Lieux de tournage : %(title)s"
+msgstr "Filming locations: %(title)s"
+
+#: templates/locations/film_map.html:176
+msgid "Aucun film sélectionné"
+msgstr "No film selected"
+
+#: templates/locations/film_map.html:177
+msgid ""
+"Recherchez un film par titre ou identifiant Wikidata pour afficher ses lieux "
+"de tournage."
+msgstr ""
+"Search for a film by title or Wikidata ID to show its filming locations."
+
+#: templates/locations/location_films.html:14
+msgid "Rechercher un lieu"
+msgstr "Search for a location"
+
+#: templates/locations/location_films.html:25
+msgid "Ex : Paris, France, Royaume-Uni..."
+msgstr "e.g. Paris, France, Italy..."
+
+#: templates/locations/location_films.html:29
+msgid "Recherche partielle insensible à la casse"
+msgstr "Partial, case-insensitive search"
+
+#: templates/locations/location_films.html:32
+msgid "Rechercher"
+msgstr "Search"
+
+#: templates/locations/location_films.html:41
+msgid "Lieux en base"
+msgstr "Locations in the database"
+
+#: templates/locations/location_films.html:46
+msgid "Filtrer par lieu ou pays…"
+msgstr "Filter by location or country…"
+
+#: templates/locations/location_films.html:53
+#, python-format
+msgid "%(counter)s film tourné ici"
+msgid_plural "%(counter)s films tournés ici"
+msgstr[0] "%(counter)s film shot here"
+msgstr[1] "%(counter)s films shot here"
+
+#: templates/locations/location_films.html:57
+msgid "Aucun lieu en base."
+msgstr "No locations in the database."
+
+#: templates/locations/location_films.html:64
+msgid "Aucun résultat"
+msgstr "No results"
+
+#: templates/locations/location_films.html:75
+msgid "Résultats"
+msgstr "Results"
+
+#: templates/locations/location_films.html:80
+msgid "Films trouvés :"
+msgstr "Films found:"
+
+#: templates/locations/location_films.html:90
+msgid "Exemples"
+msgstr "Examples"
+
+#: templates/locations/location_films.html:93
+msgid "Essayez de chercher :"
+msgstr "Try searching for:"
+
+#: templates/locations/location_films.html:95
+msgid "Londres"
+msgstr "London"
+
+#: templates/locations/location_films.html:97
+msgid "(Les résultats dépendent des films importés)"
+msgstr "(Results depend on the imported films)"
+
+#: templates/locations/location_films.html:109
+msgid "Localisation"
+msgstr "Location"
+
+#: templates/locations/location_films.html:123
+msgid "Recherchez un lieu de tournage"
+msgstr "Search for a filming location"
+
+#: templates/locations/location_films.html:124
+msgid ""
+"Entrez le nom d'une ville, d'un pays ou d'un lieu pour voir tous les films y "
+"ayant été tournés."
+msgstr "Enter a city, country or place name to see every film shot there."
+
+#: templates/locations/login.html:7
+msgid "Connexion"
+msgstr "Log in"
+
+#: templates/locations/login.html:50
+msgid "Connexion au back office"
+msgstr "Back office login"
+
+#: templates/locations/login.html:55
+msgid "Identifiant ou mot de passe incorrect."
+msgstr "Incorrect username or password."
+
+#: templates/locations/login.html:62
+msgid "Identifiant"
+msgstr "Username"
+
+#: templates/locations/login.html:70
+msgid "Mot de passe"
+msgstr "Password"
+
+#: templates/locations/login.html:81
+msgid "Se connecter"
+msgstr "Log in"
+
+#: templates/locations/login.html:88
+msgid "Retour au site"
+msgstr "Back to the site"

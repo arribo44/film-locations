@@ -1,4 +1,5 @@
 from django.db import models
+from django.utils.translation import gettext_lazy as _
 
 
 class Film(models.Model):
@@ -7,13 +8,14 @@ class Film(models.Model):
     release_date = models.DateField(null=True, blank=True)
     poster_url = models.URLField(blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)  # dernier import ou ré-import
 
     def __str__(self):
         return self.title
 
     class Meta:
-        verbose_name = 'Film'
-        verbose_name_plural = 'Films'
+        verbose_name = _('Film')
+        verbose_name_plural = _('Films')
         ordering = ['-release_date']
 
 
@@ -22,13 +24,14 @@ class Actor(models.Model):
     name = models.CharField(max_length=300)
     birth_date = models.DateField(null=True, blank=True)
     photo_url = models.URLField(blank=True)
+    updated_at = models.DateTimeField(auto_now=True)  # dernier import ou ré-import
 
     def __str__(self):
         return self.name
 
     class Meta:
-        verbose_name = 'Acteur'
-        verbose_name_plural = 'Acteurs'
+        verbose_name = _('Acteur')
+        verbose_name_plural = _('Acteurs')
         ordering = ['name']
 
 
@@ -37,12 +40,12 @@ class FilmActor(models.Model):
     actor = models.ForeignKey(Actor, on_delete=models.CASCADE, related_name='actor_films')
 
     def __str__(self):
-        return f"{self.actor.name} dans {self.film.title}"
+        return _("%(actor)s dans %(film)s") % {'actor': self.actor.name, 'film': self.film.title}
 
     class Meta:
         unique_together = ('film', 'actor')
-        verbose_name = 'Film-Acteur'
-        verbose_name_plural = 'Films-Acteurs'
+        verbose_name = _('Film-Acteur')
+        verbose_name_plural = _('Films-Acteurs')
 
 
 class ShootingLocation(models.Model):
@@ -58,5 +61,5 @@ class ShootingLocation(models.Model):
 
     class Meta:
         unique_together = ('wikidata_id', 'film')
-        verbose_name = 'Lieu de tournage'
-        verbose_name_plural = 'Lieux de tournage'
+        verbose_name = _('Lieu de tournage')
+        verbose_name_plural = _('Lieux de tournage')

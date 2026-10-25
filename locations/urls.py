@@ -1,8 +1,11 @@
 from django.urls import path
+from django.contrib.auth import views as auth_views
 from . import views
 
 urlpatterns = [
     path('', views.home_view, name='home'),
+    path('login/', auth_views.LoginView.as_view(template_name='locations/login.html'), name='login'),
+    path('logout/', auth_views.LogoutView.as_view(), name='logout'),
     path('film-map/', views.film_map_view, name='film_map'),
     path('actor-map/', views.actor_map_view, name='actor_map'),
     path('location-films/', views.location_films_view, name='location_films'),

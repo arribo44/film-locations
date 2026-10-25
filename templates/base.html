@@ -1,5 +1,6 @@
-<!DOCTYPE html>
-<html lang="fr">
+{% load i18n %}<!DOCTYPE html>
+{% get_current_language as LANGUAGE_CODE %}
+<html lang="{{ LANGUAGE_CODE }}">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -49,6 +50,21 @@
     .badge-location {
       font-size: 0.85em;
     }
+    /* Listes « Films / Acteurs en base » (cartes du front) */
+    .db-list {
+      max-height: 320px;
+      overflow-y: auto;
+    }
+    .db-list .db-list-meta {
+      color: #6c757d;
+    }
+    .db-list .active .db-list-meta {
+      color: inherit;
+    }
+    .lang-switch .btn {
+      min-width: 42px;
+      font-weight: 600;
+    }
   </style>
 </head>
 <body class="hold-transition sidebar-mini layout-fixed">
@@ -64,16 +80,19 @@
       </li>
       <li class="nav-item d-none d-sm-inline-block">
         <a href="{% url 'home' %}" class="nav-link">
-          <i class="fas fa-home"></i> Accueil
+          <i class="fas fa-home"></i> {% trans "Accueil" %}
         </a>
       </li>
     </ul>
 
-    <ul class="navbar-nav ml-auto">
-      <li class="nav-item">
+    <ul class="navbar-nav ml-auto align-items-center">
+      <li class="nav-item d-none d-md-block">
         <span class="nav-link text-muted">
           <i class="fas fa-map-marked-alt"></i> Film Shooting Locations
         </span>
+      </li>
+      <li class="nav-item">
+        {% include "includes/language_switch.html" %}
       </li>
     </ul>
   </nav>
@@ -88,62 +107,74 @@
 
     <!-- Sidebar -->
     <div class="sidebar">
-      <div class="user-panel mt-3 pb-3 mb-3 d-flex">
-        <div class="image">
-          <i class="fas fa-globe fa-2x ml-1" style="color: #3498db;"></i>
-        </div>
-        <div class="info">
-          <a href="#" class="d-block" style="color: #c2c7d0;">Wikidata Explorer</a>
-        </div>
-      </div>
-
       <!-- Sidebar Menu -->
       <nav class="mt-2">
         <ul class="nav nav-pills nav-sidebar flex-column" data-widget="treeview" role="menu" data-accordion="false">
 
-          <li class="nav-item">
-            <a href="{% url 'film_map' %}" class="nav-link {% if active_page == 'film_map' %}active{% endif %}">
-              <i class="nav-icon fas fa-map-marker-alt"></i>
-              <p>Carte d'un Film</p>
-            </a>
-          </li>
+          {% if section == 'back' %}
+            <li class="nav-header">BACK OFFICE</li>
 
-          <li class="nav-item">
-            <a href="{% url 'actor_map' %}" class="nav-link {% if active_page == 'actor_map' %}active{% endif %}">
-              <i class="nav-icon fas fa-user-circle"></i>
-              <p>Carte d'un Acteur</p>
-            </a>
-          </li>
+            <li class="nav-item">
+              <a href="{% url 'admin_import' %}" class="nav-link {% if active_page == 'admin_import' %}active{% endif %}">
+                <i class="nav-icon fas fa-film"></i>
+                <p>{% trans "Import film" %}</p>
+              </a>
+            </li>
 
-          <li class="nav-item">
-            <a href="{% url 'location_films' %}" class="nav-link {% if active_page == 'location_films' %}active{% endif %}">
-              <i class="nav-icon fas fa-search-location"></i>
-              <p>Films par Lieu</p>
-            </a>
-          </li>
+            <li class="nav-item">
+              <a href="{% url 'actor_import' %}" class="nav-link {% if active_page == 'actor_import' %}active{% endif %}">
+                <i class="nav-icon fas fa-user-plus"></i>
+                <p>{% trans "Import acteur" %}</p>
+              </a>
+            </li>
 
-          <li class="nav-header">ADMINISTRATION</li>
+            <li class="nav-item">
+              <a href="/admin/" class="nav-link" target="_blank">
+                <i class="nav-icon fas fa-cog"></i>
+                <p>{% trans "Admin Django" %}</p>
+              </a>
+            </li>
 
-          <li class="nav-item">
-            <a href="{% url 'admin_import' %}" class="nav-link {% if active_page == 'admin_import' %}active{% endif %}">
-              <i class="nav-icon fas fa-film"></i>
-              <p>Import film</p>
-            </a>
-          </li>
+            <li class="nav-item">
+              <form method="post" action="{% url 'logout' %}">
+                {% csrf_token %}
+                <button type="submit" class="nav-link btn btn-link text-left w-100 border-0 text-decoration-none">
+                  <i class="nav-icon fas fa-sign-out-alt"></i>
+                  <p class="d-inline">{% trans "Déconnexion" %}</p>
+                </button>
+              </form>
+            </li>
+          {% else %}
+            <li class="nav-header">FRONT OFFICE</li>
 
-          <li class="nav-item">
-            <a href="{% url 'actor_import' %}" class="nav-link {% if active_page == 'actor_import' %}active{% endif %}">
-              <i class="nav-icon fas fa-user-plus"></i>
-              <p>Import acteur</p>
-            </a>
-          </li>
+            <li class="nav-item">
+              <a href="{% url 'film_map' %}" class="nav-link {% if active_page == 'film_map' %}active{% endif %}">
+                <i class="nav-icon fas fa-map-marker-alt"></i>
+                <p>{% trans "Carte d'un film" %}</p>
+              </a>
+            </li>
 
-          <li class="nav-item">
-            <a href="/admin/" class="nav-link" target="_blank">
-              <i class="nav-icon fas fa-cog"></i>
-              <p>Admin Django</p>
-            </a>
-          </li>
+            <li class="nav-item">
+              <a href="{% url 'actor_map' %}" class="nav-link {% if active_page == 'actor_map' %}active{% endif %}">
+                <i class="nav-icon fas fa-user-circle"></i>
+                <p>{% trans "Carte d'un acteur" %}</p>
+              </a>
+            </li>
+
+            <li class="nav-item">
+              <a href="{% url 'location_films' %}" class="nav-link {% if active_page == 'location_films' %}active{% endif %}">
+                <i class="nav-icon fas fa-search-location"></i>
+                <p>{% trans "Films par lieu" %}</p>
+              </a>
+            </li>
+
+            <li class="nav-item">
+              <a href="{% if user.is_authenticated %}{% url 'admin_import' %}{% else %}{% url 'login' %}{% endif %}" class="nav-link">
+                <i class="nav-icon fas fa-user-shield"></i>
+                <p>{% trans "Administration" %}</p>
+              </a>
+            </li>
+          {% endif %}
 
         </ul>
       </nav>
@@ -162,7 +193,7 @@
           </div>
           <div class="col-sm-6">
             <ol class="breadcrumb float-sm-right">
-              <li class="breadcrumb-item"><a href="{% url 'home' %}">Accueil</a></li>
+              <li class="breadcrumb-item"><a href="{% url 'home' %}">{% trans "Accueil" %}</a></li>
               <li class="breadcrumb-item active">{% block breadcrumb %}{% endblock %}</li>
             </ol>
           </div>
@@ -180,7 +211,7 @@
             <div class="alert alert-{% if message.tags == 'error' %}danger{% elif message.tags == 'success' %}success{% elif message.tags == 'warning' %}warning{% else %}info{% endif %} alert-dismissible fade show" role="alert">
               <i class="fas fa-{% if message.tags == 'error' %}times-circle{% elif message.tags == 'success' %}check-circle{% elif message.tags == 'warning' %}exclamation-triangle{% else %}info-circle{% endif %} mr-2"></i>
               {{ message }}
-              <button type="button" class="close" data-dismiss="alert" aria-label="Fermer">
+              <button type="button" class="close" data-dismiss="alert" aria-label="{% trans 'Fermer' %}">
                 <span aria-hidden="true">&times;</span>
               </button>
             </div>
@@ -196,9 +227,9 @@
   <!-- Footer -->
   <footer class="main-footer">
     <strong>Film Shooting Locations</strong> &mdash;
-    Données issues de <a href="https://www.wikidata.org" target="_blank">Wikidata</a>
+    {% trans "Données issues de" %} <a href="https://www.wikidata.org" target="_blank">Wikidata</a>
     <div class="float-right d-none d-sm-inline-block">
-      <b>Cartes</b> : <a href="https://python-visualization.github.io/folium/" target="_blank">Folium</a>
+      <b>{% trans "Cartes" %}</b> : <a href="https://python-visualization.github.io/folium/" target="_blank">Folium</a>
     </div>
   </footer>
 
@@ -210,6 +241,26 @@
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/js/bootstrap.bundle.min.js"></script>
 <!-- AdminLTE JS -->
 <script src="https://cdn.jsdelivr.net/npm/admin-lte@3.2/dist/js/adminlte.min.js"></script>
+
+<script>
+/* Filtre des listes : <input data-filter-list="id-de-la-liste">, sans tenir compte des accents ni de la casse */
+(function () {
+  const normalize = s => s.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
+  document.querySelectorAll('[data-filter-list]').forEach(function (input) {
+    const list = document.getElementById(input.dataset.filterList);
+    if (!list) return;
+    input.addEventListener('input', function () {
+      const q = normalize(this.value.trim());
+      list.querySelectorAll('.list-group-item-action').forEach(function (item) {
+        item.classList.toggle('d-none', q !== '' && !normalize(item.textContent).includes(q));
+      });
+    });
+    // Faire défiler la liste (et non la page) jusqu'à l'élément sélectionné
+    const active = list.querySelector('.active');
+    if (active) list.scrollTop = active.offsetTop - list.offsetTop - list.clientHeight / 2;
+  });
+})();
+</script>
 
 {% block extra_js %}{% endblock %}
 </body>
